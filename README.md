@@ -66,7 +66,7 @@ point the line
 
 the program consider the instruction begins only at this point. It is usefull
 when unsing it with a Jupyter notebook:
-
+```
 **In[]:**
 > X = numpy.arange(0,10,0.1)
 > d=dict(X=X)
@@ -75,7 +75,7 @@ when unsing it with a Jupyter notebook:
 > \#! SF_INSTRUCTIONS
 > X=arange(0,10,0.1)
 > plot(X,cos(X))
-
+```
 Will save figure whose instructions are the last lines of the cell.
 
 ## FAQ
