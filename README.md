@@ -19,7 +19,7 @@ in Python 3.5.2.
 - PyQt5
 
 ## Quick Example
-
+```
 > import RFigure3,numpy
 > X = numpy.arange(0,10,0.1)
 > Y = numpy.cos(X)
@@ -30,7 +30,7 @@ in Python 3.5.2.
 > rf.show() # execute the instrucutions to be sure it works
 > rf.save() # only save the rfig3 file
 > rf.save(fig_type='pdf') # save the rfig3 file as well as the pdf aoscciated
-
+```
 Once a rfig3 file is saved, one can use the gui interface to modify the
 instructions:
 > $ python3 /foo/RFigure3.py ./Test.rfig3
