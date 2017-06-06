@@ -72,7 +72,7 @@ when unsing it with a Jupyter notebook:
 > d=dict(X=X)
 > rf = RFigure3.RFIgureCore(i=In[-1],d=d)
 > rf.save()
-> \#! SF_INSTRUCTIONS
+> #! SF_INSTRUCTIONS
 > X=arange(0,10,0.1)
 > plot(X,cos(X))
 ```
