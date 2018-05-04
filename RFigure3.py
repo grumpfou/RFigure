@@ -7,7 +7,12 @@ Contains RFigureCore and RFigureGui that are dealing with the different files
 
 """
 import matplotlib
-matplotlib.use('Qt5Agg')
+import warnings
+
+with warnings.catch_warnings():
+	warnings.simplefilter("ignore")
+	matplotlib.use('Qt5Agg')
+
 import matplotlib.pyplot
 # matplotlib.pyplot.ion()
 matplotlib.pyplot.show._needmain = False
@@ -69,7 +74,6 @@ class RFigureCore:
 		> rf.save(dirpath='.',filename="Test",fig_type='pdf') # Save the rfig3 file
 		>												   # with the pdf file
 		"""
-		print ("cuiou")
 		# Deals with synonyms :
 		assert instructions==None or i==None
 		assert dict_variables==None or d==None
@@ -129,14 +133,14 @@ class RFigureCore:
 
 		### We put the filename, and dirpath
 		if dirpath==None:self.dirpath='./figures/'
-		else: self.dirpath=dirpath.strip()
+		else: self.dirpath=str(dirpath).strip() # str in case of PosixPath
 		if self.dirpath == "": self.dirpath='.'
 
 		if filename==None	:self.filename=''
 		else: self.filename=filename
 		# if globals_var==None: globals_var=globals()
 
-	def show(self):
+	def execute(self):
 		"""
 		Will plot the figure.
 		"""
@@ -165,6 +169,7 @@ class RFigureCore:
 		# tf.write(instructions)
 		# tf.close()
 
+		old_rcParams  =  matplotlib.rcParams.copy()
 		try:
 			# execfile(tf.name,self.dict_variables.copy())
 			exec(instructions,self.dict_variables.copy())
@@ -183,8 +188,16 @@ class RFigureCore:
 					'\n\t'+text+'\n'
 			mess+= e.__class__.__name__ +':'+str(e)
 			raise type(e)(mess)
+		finally:
+			  matplotlib.rcParams.update(old_rcParams)#We restore the previous parameters
 
+	def show(self):
+		""" Method that execute the code instructions and adds the
+		matplotlib.pyplot.show() statement at the end.
+		"""
+		self.execute()
 		matplotlib.pyplot.show()
+
 
 	def save(self,dirpath=None,filename=None,fig_type=False,formatName=True):
 		"""
@@ -226,10 +239,11 @@ class RFigureCore:
 
 	def savefig(self,fig_path,fig_type='png'):
 
-		if fig_type not in self.fig_type_list:
+		if fig_type not in self.fig_type_list and not (fig_type is None):
 			raise ValueError('fig_type should be in '+str(self.fig_type_list))
 		matplotlib.pyplot.ion()
-		self.show()
+		# self.show()
+		self.execute()
 
 		# we make the list of all the figures
 		figures=[manager.canvas.figure for manager in \
@@ -285,11 +299,12 @@ class RFigureCore:
 					list_lines[i]=line[int(min_tab):]
 		self.instructions='\n'.join(list_lines)
 
-		ii =  self.instructions.find(self.file_split)
-		if ii>0:
-			self.instructions=self.instructions[ii:]
-			f = self.instructions[:ii]
-			f = f.replace('\n','\n>>> ')
+		self.instructions = self.instructions.split(self.file_split)[-1]
+		# ii =  self.instructions.find(self.file_split)
+		# if ii>0:
+		# 	self.instructions=self.instructions[ii:]
+		# 	f = self.instructions[:ii]
+		# 	f = f.replace('\n','\n>>> ')
 
 	def find_list_variables(self,in_globals_var=True):
 		def empty():pass
@@ -416,7 +431,7 @@ class RFigureCore:
 		self.filename = filename
 
 		return filename
-class RFigureGui(RFigureCore,QtWidgets.QWidget):
+class RFigureGui(RFigureCore,QtWidgets.QMainWindow):
 	def __init__(self,parent=None,*args,**kargs):
 		"""
 		A class that inherit from RFigureCore for the core aspects and QWidget
@@ -431,9 +446,8 @@ class RFigureGui(RFigureCore,QtWidgets.QWidget):
 			'.')
 		- filename : the default name file.
 		"""
-		QtWidgets.QWidget.__init__(self,parent=parent)
+		QtWidgets.QMainWindow.__init__(self,parent=parent)
 		RFigureCore.__init__(self,*args,**kargs)
-		self.setWindowTitle('RFigureGui 3 : Save matplotlib figure')
 
 
 
@@ -530,7 +544,9 @@ class RFigureGui(RFigureCore,QtWidgets.QWidget):
 
 
 
-		self.setLayout(main_layout)
+		self.setCentralWidget(wid)
+		self.setWindowTitle('RFigureGui 3 : Save matplotlib figure')
+		self.setWindowIcon(QtGui.QIcon(os.path.join(file_dir,'images/logo.png')))
 
 		button_show	  .clicked.connect(self.show)
 		button_save	  .clicked.connect(self.save)
@@ -543,7 +559,7 @@ class RFigureGui(RFigureCore,QtWidgets.QWidget):
 		actionClAll				.triggered.connect(self.closeAll)
 		self.lineEdit_dirpath	.textChanged.connect(self.checkDirpath)
 
-		QtWidgets.QWidget.show(self)
+		QtWidgets.QMainWindow.show(self)
 		self.uploadDataToGui()
 		self.checkDirpath()
 
@@ -599,13 +615,6 @@ class RFigureGui(RFigureCore,QtWidgets.QWidget):
 
 			mess = str(e)
 			raise e
-			# # for frame in traceback.extract_tb(sys.exc_info()[2]):
-			# 	# fname,lineno,fn,text = frame
-			# 	# mess = "Error in %s on line %d" % (fname, lineno)
-			# # line = sys.exc_traceback.tb_lineno
-
-			# msgBox=QtWidgets.QMessageBox.critical(self,"Exec Error",
-				# e.__class__.__name__+" : "+mess)
 		finally:
 			print("============ END ============")
 

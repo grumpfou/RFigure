@@ -60,6 +60,7 @@ def object_to_txt(objects):
 	elif type(objects)==np.ndarray:
 		res += "numpy.array("+object_to_txt(list(objects))+',dtype='+object_to_txt(objects.dtype)+')'
 
+
 	# elif type(objects)==unicode:
 	# 	res += repr(objects)
 
@@ -69,6 +70,11 @@ def object_to_txt(objects):
 
 
 def load(filepath):
+	""" Load the RPickle file of filepath
+	- filepath: path to the file to load
+	Returns:
+	- objets, commentaries, version
+	"""
 	fid = gzip.GzipFile(filepath,'rb')
 	try :
 		reads = fid.read()
@@ -90,7 +96,6 @@ def load(filepath):
 		exec(instructions,d)
 		print("Success instructions")
 	except BaseException as e:
-		print(instructions)
 		raise e
 	return d['objects'],d['commentaries'],d['version']
 

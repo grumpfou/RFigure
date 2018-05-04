@@ -90,11 +90,11 @@ class RPythonEditor(QtWidgets.QPlainTextEdit):
 		self.addAction(self.actionMoveLineUp)
 		self.addAction(self.actionMoveLineDown)
 
-		self.actionCommentDecomment.setShortcuts(QtGui.QKeySequence("Ctrl+Q"))
-		self.actionDeleteLine.setShortcuts(QtGui.QKeySequence("Ctrl+L"))
-		self.actionDuplicateLine.setShortcuts(QtGui.QKeySequence("Ctrl+D"))
-		self.actionMoveLineUp.setShortcuts(QtGui.QKeySequence("Ctrl+Shift+Up"))
-		self.actionMoveLineDown.setShortcuts(QtGui.QKeySequence("Ctrl+Shift+Down"))
+		self.actionCommentDecomment.setShortcuts(QtGui.QKeySequence("Ctrl+/"))
+		self.actionDeleteLine.setShortcuts(QtGui.QKeySequence("Ctrl+Shift+K"))
+		self.actionDuplicateLine.setShortcuts(QtGui.QKeySequence("Ctrl+Shift+D"))
+		self.actionMoveLineUp.setShortcuts(QtGui.QKeySequence("Ctrl+Up"))
+		self.actionMoveLineDown.setShortcuts(QtGui.QKeySequence("Ctrl+Down"))
 
 		self.actionCommentDecomment	.triggered.connect(self.SLOT_actionCommentDecomment)
 		self.actionDeleteLine		.triggered.connect(self.SLOT_actionDeleteLine)
@@ -118,6 +118,10 @@ class RPythonEditor(QtWidgets.QPlainTextEdit):
 		else:
 			QtWidgets.QPlainTextEdit.keyPressEvent(self,e)
 
+	def setPlainText(self,text):
+		text = text.replace('    ','\t')# we replace the spaces by tabs
+		QtWidgets.QPlainTextEdit.setPlainText(self,text)
+
 	def insertFromMimeData(self,source ):
 		"""A re-implementation of insertFromMimeData. We have to check the
 		typography of what we have just paste.
@@ -130,6 +134,7 @@ class RPythonEditor(QtWidgets.QPlainTextEdit):
 
 	def SLOT_actionCommentDecomment(self):
 		cur1 = self.textCursor()
+		cur1.beginEditBlock()
 
 		for current_block in cur1.yieldBlockInSelection():
 			# current_block = cur.block()
@@ -151,18 +156,22 @@ class RPythonEditor(QtWidgets.QPlainTextEdit):
 					cur.deleteChar()
 					while charAt(cur.position())==' ':
 						cur.deleteChar()
+		cur1.endEditBlock()
 
 	def SLOT_actionDeleteLine(self):
 		cur = self.textCursor()
+		cur.beginEditBlock()
 		cur.selectBlocks()
 		# cur.select(QtGui.QTextCursor.BlockUnderCursor)
 		self.setTextCursor(cur)
 		self.cut()
+		cur.endEditBlock()
 		# if cur.atEnd():
 		# cur.deleteChar()
 
 	def SLOT_actionDuplicateLine(self):
 		cur = self.textCursor()
+		cur.beginEditBlock()
 		cur.selectBlocks()
 		# cur.select(QtGui.QTextCursor.BlockUnderCursor)
 		text = str(cur.selectedText())
@@ -170,10 +179,12 @@ class RPythonEditor(QtWidgets.QPlainTextEdit):
 			text = '\n'+text
 		cur.movePosition(QtGui.QTextCursor.EndOfBlock)
 		cur.insertText(text)
+		cur.endEditBlock()
 		self.setTextCursor(cur)
 
 	def SLOT_actionMoveLineUp(self):
 		cur = self.textCursor()
+		cur.beginEditBlock()
 		if not cur.block().previous().isValid() :
 			return False
 		# cur.select(QtGui.QTextCursor.BlockUnderCursor)
@@ -192,6 +203,7 @@ class RPythonEditor(QtWidgets.QPlainTextEdit):
 			cur.insertBlock()
 		cur.setPosition(p)
 		cur.movePosition(QtGui.QTextCursor.Right,QtGui.QTextCursor.KeepAnchor,len(text))
+		cur.endEditBlock()
 		self.setTextCursor(cur)
 
 
@@ -214,7 +226,9 @@ class RPythonEditor(QtWidgets.QPlainTextEdit):
 
 	def SLOT_actionMoveLineDown(self):
 		cur = self.textCursor()
+		cur.beginEditBlock()
 		if not cur.block().next().isValid() :
+			cur.endEditBlock()
 			return False
 		# cur.select(QtGui.QTextCursor.BlockUnderCursor)
 		cur.selectBlocks()
@@ -233,6 +247,7 @@ class RPythonEditor(QtWidgets.QPlainTextEdit):
 		cur.movePosition(QtGui.QTextCursor.StartOfBlock,QtGui.QTextCursor.MoveAnchor)
 		cur.movePosition(QtGui.QTextCursor.Right,QtGui.QTextCursor.KeepAnchor,len(text))
 		self.setTextCursor(cur)
+		cur.endEditBlock()
 
 class RMarkdownEditor(QtWidgets.QTextEdit):
 	def __init__(self,parent=None):
