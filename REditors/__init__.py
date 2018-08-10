@@ -56,6 +56,13 @@ QtGui.QTextCursor.yieldBlockInSelection=yieldBlockInSelection_WW
 
 
 class RPythonEditor(QtWidgets.QPlainTextEdit):
+	delimiters = {
+					"'":"''",
+					'"':'""',
+					'(':'()',
+					'[':'[]',
+					'{':'{}',
+					}
 	def __init__(self,parent=None):
 		QtWidgets.QPlainTextEdit.__init__(self,parent=parent)
 		self.highlight = syntax.PythonHighlighter(self.document())
@@ -115,6 +122,15 @@ class RPythonEditor(QtWidgets.QPlainTextEdit):
 				cur1.movePosition(QtGui.QTextCursor.Right,QtGui.QTextCursor.KeepAnchor)
 				if str(cur1.selectedText())=='\t':
 					cur1.removeSelectedText()
+
+		elif e.text() in self.delimiters:
+			# QtWidgets.QTextEdit.keyPressEvent(self,event)
+			self.blockSignals(True)
+			cursor=self.insert_delimiters(e.text(),self.textCursor())
+			# cursor = self.language.check_delimiters()
+			self.setTextCursor(cursor)
+			self.blockSignals(False)
+
 		else:
 			QtWidgets.QPlainTextEdit.keyPressEvent(self,e)
 
@@ -248,6 +264,31 @@ class RPythonEditor(QtWidgets.QPlainTextEdit):
 		cur.movePosition(QtGui.QTextCursor.Right,QtGui.QTextCursor.KeepAnchor,len(text))
 		self.setTextCursor(cur)
 		cur.endEditBlock()
+
+	def insert_delimiters(self,delim_key,cursor):
+		if cursor.hasSelection():
+			selectionStart	= cursor.selectionStart()
+			selectionEnd	= cursor.selectionEnd()
+			position		= cursor.position()
+			l1 = len(self.delimiters[delim_key][0])
+			l2 = len(self.delimiters[delim_key][1])
+			cursor1 = QtGui.QTextCursor(cursor)
+			cursor2 = QtGui.QTextCursor(cursor)
+			cursor1.setPosition(selectionStart)
+			cursor2.setPosition(selectionEnd)
+			cursor1.insertText(self.delimiters[delim_key][0])
+			cursor2.insertText(self.delimiters[delim_key][1])
+			cursor.setPosition(selectionStart+l1,QtGui.QTextCursor.MoveAnchor)
+			cursor.setPosition(selectionEnd+l1,QtGui.QTextCursor.KeepAnchor)
+			# cursor.setPosition(position+l1,QtGui.QTextCursor.KeepAnchor)
+
+		else:
+			cursor.insertText(self.delimiters[delim_key][0])
+			cursor.insertText(self.delimiters[delim_key][1])
+			cursor.movePosition(QtGui.QTextCursor.Left,QtGui.QTextCursor.MoveAnchor,len(self.delimiters[delim_key][1]))
+
+		return cursor
+
 
 class RMarkdownEditor(QtWidgets.QTextEdit):
 	def __init__(self,parent=None):

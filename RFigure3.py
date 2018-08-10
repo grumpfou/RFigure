@@ -43,8 +43,7 @@ class RFigureCore:
 	fig_type_list=['eps','pdf','png']
 	def __init__(self,dict_variables=None,instructions=None,file_to_run=None,
 			commentaries=None,file_split="#! SF_INSTRUCTIONS",
-			globals_var=None,d=None,i=None,c=None,
-			filename=None,dirpath=None):
+			globals_var=None,d=None,i=None,c=None):
 		"""
 		This function will save the figure into a propper way, in order to open
 		it again.
@@ -111,6 +110,7 @@ class RFigureCore:
 
 		self.clean_instructions() # we clean the instructions
 
+		self.filepath = None
 		### We put the variables
 		self.globals_var=globals_var
 		self.dict_variables= {}
@@ -131,19 +131,15 @@ class RFigureCore:
 			raise TypeError('dict_variables should be either a dict either a'+\
 					'list of names')
 
-		### We put the filename, and dirpath
-		if dirpath==None:self.dirpath='./figures/'
-		else: self.dirpath=str(dirpath).strip() # str in case of PosixPath
-		if self.dirpath == "": self.dirpath='.'
-
-		if filename==None	:self.filename=''
-		else: self.filename=filename
-		# if globals_var==None: globals_var=globals()
 
 	def execute(self):
 		"""
 		Will plot the figure.
 		"""
+		if self.filepath!=None:
+			dirpath,_ = os.path.split(self.filepath)
+		else:
+			dirpath = '.'
 		matplotlib.pyplot.close('all')
 		fid = open (path_to_header,'r')
 		try :
@@ -152,7 +148,8 @@ class RFigureCore:
 			fid.close()
 		instructions +='\n\n'
 
-		path_to_header_local = os.path.join(self.dirpath,'./.RFigureHeaderLocal.py')
+		if not dirpath is None:
+			path_to_header_local = os.path.join(dirpath,'./.RFigureHeaderLocal.py')
 		if os.path.exists(path_to_header_local):
 			fid = open (path_to_header_local,'r')
 			try :
@@ -165,18 +162,10 @@ class RFigureCore:
 		nb_line_header = len(instructions.split('\n'))
 		instructions+=self.instructions
 
-		# tf = tempfile.NamedTemporaryFile(delete=False,encoding='utf-8',mode='w')
-		# tf.write(instructions)
-		# tf.close()
 
-		old_rcParams  =  matplotlib.rcParams.copy()
 		try:
-			# execfile(tf.name,self.dict_variables.copy())
 			exec(instructions,self.dict_variables.copy())
 		except Exception as e :
-			# if hasattr(e,"lineno"):
-			# 	e.lineno -= nb_line_header-1
-			# This is because I want to give the good line number of the error.
 			mess = "Traceback (most recent call last):\n"
 			for frame in traceback.extract_tb(sys.exc_info()[2]):
 				fname,lineno,fn,text = frame
@@ -188,8 +177,6 @@ class RFigureCore:
 					'\n\t'+text+'\n'
 			mess+= e.__class__.__name__ +':'+str(e)
 			raise type(e)(mess)
-		finally:
-			  matplotlib.rcParams.update(old_rcParams)#We restore the previous parameters
 
 	def show(self):
 		""" Method that execute the code instructions and adds the
@@ -199,12 +186,12 @@ class RFigureCore:
 		matplotlib.pyplot.show()
 
 
-	def save(self,dirpath=None,filename=None,fig_type=False,formatName=True):
+	def save(self,filepath=None,fig_type=False,formatName=True):
 		"""
 		Will save the figure in a rfig file. The name of the file will be as
 		follow :
 				"Figure_" + date + decr + ".rfig"
-		- dirpath : the directory where to save the function
+		- filepath : the filepath where to save the figure
 		- decr : short string that qualify the function
 		- fig_type : if not False, will save the figure in the corresponding
 			format. Should be in [False,'png','pdf','eps']
@@ -214,31 +201,21 @@ class RFigureCore:
 			today)
 							if False: will only check the extension
 		"""
-		if filename==None : filename=self.filename
-		else: self.filename=filename
-		if dirpath==None: dirpath=self.dirpath
-		else: self.dirpath=dirpath
-
+		if filepath is None:
+			filepath = self.filepath
 
 		objects = [self.dict_variables,self.instructions]
 
-
-		if not os.path.exists(dirpath):
-			raise IOError('The dirpath '+dirpath+' does not exists')
-			return False
-
-		filename =  self.formatName(onlyExt=(not formatName))
-
-		f = os.path.join(dirpath,filename)
-		RPickle2.save(objects,f,self.commentaries,version = __version__)
-		paths = [f]
+		RPickle2.save(objects,filepath,self.commentaries,version = __version__)
+		paths = [filepath]
 		if fig_type:
-			paths1 = self.savefig(os.path.join(dirpath,filename),fig_type=fig_type)
+			paths1 = self.savefig(filepath,fig_type=fig_type)
 			paths += paths1
+		self.filepath = filepath
 		return paths
 
 	def savefig(self,fig_path,fig_type='png'):
-
+		dirpath,_=os.path.split(fig_path)
 		if fig_type not in self.fig_type_list and not (fig_type is None):
 			raise ValueError('fig_type should be in '+str(self.fig_type_list))
 		matplotlib.pyplot.ion()
@@ -342,31 +319,28 @@ class RFigureCore:
 
 		self.dict_variables=new_dict_variables
 
+
+	def open(self,filepath,globals_var=None):
+		if not os.path.exists(filepath):
+			fig_path += self.ext
+			assert os.path.exists(filepath), filepath+" does not exist."
+		o,c,v = RPickle2.load(filepath)
+		assert v>= "2"
+
+		self.commentaries = c
+		self.instructions = o[1]
+		self.globals_var = globals_var
+		self.dict_variables = o[0]
+		self.filepath = filepath
+
+
+
+
 	@classmethod
-	def load(cls,fig_path,globals_var=None):
+	def load(cls,filepath,globals_var=None):
 		"""Return a RFigureCore instance"""
-
-		if not os.path.exists(fig_path):
-			fig_path += cls.ext
-			assert os.path.exists(fig_path), fig_path+" does not exist."
-
-		o,c,v = RPickle2.load(fig_path)
-		assert float(v)>= 2
-
-		dirpath,file_name=os.path.split(fig_path)
-
-		filename,ext = os.path.splitext(file_name)
-
-
-		sfig=RFigureCore(
-				dict_variables=o[0],
-				instructions=o[1],
-				commentaries=c,
-				globals_var=globals_var,
-				filename   = filename   ,
-				dirpath = dirpath ,
-				)
-		return sfig
+		sfig=cls.__init__()
+		sfig.open(filepath)
 
 	@staticmethod
 	def update(fig_path,d=None,i=None,c=None,mode='append',fig_type=False):
@@ -416,22 +390,26 @@ class RFigureCore:
 		rfig.save(fig_type=fig_type)
 		return rfig
 
-	def formatName(self,filename=None,onlyExt=False,ext=None):
+	def formatName(self,filepath=None,onlyExt=False,ext=None):
 		"""
-		Will format the filename
+		Will format the filename. Caution, will not update self.filepath
 		"""
-		if filename==None: filename=self.filename
 		if ext==None: ext=self.ext
+		if filepath is None:
+			filepath = self.filepath
+		dirpath,filename = os.path.split(filepath)
 		if not onlyExt:
 			if not re.match('^Figure_[0-9]{8}_',filename):
 				filename = 'Figure_'+RDateDisplay.cur_date()+'_'+filename
 		if not filename.endswith(ext):
 			filename,_=os.path.splitext(filename)
 			filename += ext
-		self.filename = filename
 
-		return filename
-class RFigureGui(RFigureCore,QtWidgets.QMainWindow):
+		filepath = os.path.join(dirpath,filename)
+
+		return filepath
+
+class RFigureGui(RFigureCore,QtWidgets.QWidget):
 	def __init__(self,parent=None,*args,**kargs):
 		"""
 		A class that inherit from RFigureCore for the core aspects and QWidget
@@ -442,8 +420,6 @@ class RFigureGui(RFigureCore,QtWidgets.QMainWindow):
 			show the figure using the variables contained in dict_variables
 		- file_to_run : if the instructions are in a different file
 		- commentaries : the comments to add to the file
-		- dirpath : the default place where we want to plot the file (default
-			'.')
 		- filename : the default name file.
 		"""
 		QtWidgets.QMainWindow.__init__(self,parent=parent)
@@ -480,42 +456,24 @@ class RFigureGui(RFigureCore,QtWidgets.QMainWindow):
 		self.table_variables =  TableVariables(saveFigureGui = self)
 
 		actionShow	= QtWidgets.QAction("Show"		,self)
-		actionSave	= QtWidgets.QAction("Save"		,self)
 		actionClAll	= QtWidgets.QAction("Close All"	,self)
-		actionSave.setShortcuts(QtGui.QKeySequence.Save)
 		actionShow.setShortcuts(QtGui.QKeySequence("Ctrl+M"))
 		actionShow.setShortcuts(QtGui.QKeySequence("Ctrl+Return"))
 		self.addAction(actionShow)
-		self.addAction(actionSave)
 
 		button_show = QtWidgets.QPushButton('Show')
-		button_save = QtWidgets.QPushButton('Save')
+		# button_save = QtWidgets.QPushButton('Save')
 		button_addVar = QtWidgets.QPushButton('Add variable')
 		button_clAll = QtWidgets.QPushButton('Close All')
-		button_listVar = QtWidgets.QPushButton('Make list var')
 		button_listVar = QtWidgets.QPushButton('Make list var')
 		if self.globals_var==None:
 			button_addVar.setEnabled(False)
 			button_listVar.setEnabled(False)
 
-		self.button_formatname = QtWidgets.QPushButton("Format Name")
 		self.comboBox = QtWidgets.QComboBox()
 		self.comboBox.addItems(self.fig_type_list+['None'])
 		self.comboBox.setCurrentIndex(self.comboBox.findText('pdf'))
-		self.lineEdit_dirpath	= QtWidgets.QLineEdit('./figures/')
-		self.lineEdit_filename	= QtWidgets.QLineEdit()
 
-
-		wid_line = QtWidgets.QWidget()
-		wid_line.setSizePolicy( QtWidgets.QSizePolicy.Expanding,
-			QtWidgets.QSizePolicy.Fixed)
-		wid_layout = QtWidgets.QHBoxLayout()
-		wid_layout.addWidget(QtWidgets.QLabel("Dir path:"))
-		wid_layout.addWidget(self.lineEdit_dirpath)
-		wid_layout.addWidget(QtWidgets.QLabel("File name:"))
-		wid_layout.addWidget(self.lineEdit_filename)
-		wid_layout.addWidget(self.button_formatname)
-		wid_line.setLayout(wid_layout)
 
 
 
@@ -524,7 +482,7 @@ class RFigureGui(RFigureCore,QtWidgets.QMainWindow):
 		splitter.addWidget	(wid_editor)
 		lay = QtWidgets.QVBoxLayout()
 		lay.addWidget(button_show )
-		lay.addWidget(button_save )
+		# lay.addWidget(button_save )
 		lay.addWidget(button_clAll)
 		lay.addWidget(QtWidgets.QLabel("List Variables:"))
 		lay.addWidget(self.table_variables)
@@ -538,30 +496,24 @@ class RFigureGui(RFigureCore,QtWidgets.QMainWindow):
 
 		main_layout = QtWidgets.QVBoxLayout()
 		main_layout.addWidget(splitter)
-		main_layout.addWidget(wid_line)
-		wid = QtWidgets.QWidget()
-		wid.setLayout(main_layout)
+		# wid = QtWidgets.QWidget()
+		self.setLayout(main_layout)
 
 
 
-		self.setCentralWidget(wid)
-		self.setWindowTitle('RFigureGui 3 : Save matplotlib figure')
-		self.setWindowIcon(QtGui.QIcon(os.path.join(file_dir,'images/logo.png')))
+		# self.setCentralWidget(wid)
 
 		button_show	  .clicked.connect(self.show)
-		button_save	  .clicked.connect(self.save)
+		# button_save	  .clicked.connect(self.save)
 		button_clAll  .clicked.connect(self.closeAll)
 		button_addVar .clicked.connect(self.table_variables.addItem)
 		button_listVar.clicked.connect(self.make_list_variables)
-		self.button_formatname.clicked.connect(self.formatName)
 		actionShow 				.triggered.connect(self.show)
-		actionSave 				.triggered.connect(self.save)
+		# actionSave 				.triggered.connect(self.save)
 		actionClAll				.triggered.connect(self.closeAll)
-		self.lineEdit_dirpath	.textChanged.connect(self.checkDirpath)
 
 		QtWidgets.QMainWindow.show(self)
 		self.uploadDataToGui()
-		self.checkDirpath()
 
 
 
@@ -569,24 +521,32 @@ class RFigureGui(RFigureCore,QtWidgets.QMainWindow):
 		# Restore sys.stdout
 		sys.stdout = sys.__stdout__
 
-	def save(self):
+	def save(self,filepath=None):
 		"""
 		The saving function called by pushon the 'Save' button.
 		Ask for confirmation and automotically asave the .png in the same time.
 		"""
+		if filepath is None:
+			filepath = self.filepath
+
+		assert not filepath is None, "No filepath defined"
+
+		dirpath , _ = os.path.split(filepath)
+		if not os.path.exists(dirpath):
+			msg = "The dirpath \n%s\n does not exists"%dirpath
+			res = QtWidgets.QMessageBox.critical ( self, "Error in dirpath",
+				msg,QtWidgets.QMessageBox.Ok)
+			return False
+
 		self.instructions	=str(self.editor_python.toPlainText())
 
 		self.commentaries	=str(self.editor_commentaries.toPlainText())
-		self.dirpath		=str(self.lineEdit_dirpath.text())
-		self.filename		= self.formatName(onlyExt=True)
+		# filepath = str(self.lineEdit_filepath.text())
+		# filepath = self.formatName(filepath,onlyExt=True)
 		fig_type 			=str(self.comboBox.currentText())
 		if fig_type=='None': fig_type=None
 
-		if self.dirpath=="" : # by default it is in the current directory
-			self.dirpath="."
-
-		msg= "We are going to save the figure\n"+self.filename+\
-			" in the directory "+self.dirpath
+		msg= "We are going to save the figure in \n"+filepath
 		msg = RTextWrap(str(msg))
 
 		res = QtWidgets.QMessageBox.question ( self, "Saving confirmation",
@@ -594,11 +554,16 @@ class RFigureGui(RFigureCore,QtWidgets.QMainWindow):
 
 
 		if (res == QtWidgets.QMessageBox.Yes):
-			res = RFigureCore.save(self,dirpath=self.dirpath,filename=self.filename,
-					fig_type=fig_type)
+
+			res = RFigureCore.save(self,filepath, fig_type=fig_type)
 			if not res:
-				msg = "The directory "+self.dirpath+" does not exist."
+				d,_ = os.path.split(filepath)
+				msg = "The directory %s does not exist."%d
 				QtWidgets.QMessageBox.information ( self, "No saving", msg)
+
+	def open(self,filepath):
+		sf = RFigureCore.open(self,filepath)
+		self.uploadDataToGui()
 
 
 	def show(self):
@@ -624,33 +589,16 @@ class RFigureGui(RFigureCore,QtWidgets.QMainWindow):
 		"""
 		matplotlib.pyplot.close('all')
 
-	@staticmethod
-	def load(fig_path,globals_var=None):
-		"""
-		Static method used to load a figure from a .rfig file.
-		"""
-		sf = RFigureCore.load(fig_path)
-		dirpath,filename=os.path.split(fig_path)
 
-		return RFigureGui(dict_variables=sf.dict_variables,
-								instructions=sf.instructions,
-								commentaries=sf.commentaries,
-								dirpath=dirpath,
-								filename=filename,
-								globals_var=globals_var
-								)
 	@staticmethod
-	def loadFromRFigureCore(rfigcore,fig_path=None,globals_var=None):
+	def loadFromRFigureCore(rfigcore,globals_var=None):
 		"""
 		Static method used to upgrade a RFigureCore into a RFigureGui
 		"""
-		dirpath,filename=os.path.split(fig_path)
 
 		return RFigureGui(dict_variables=rfigcore.dict_variables,
 								instructions=rfigcore.instructions,
 								commentaries=rfigcore.commentaries,
-								dirpath=dirpath,
-								filename=filename,
 								globals_var=globals_var
 								)
 
@@ -663,16 +611,9 @@ class RFigureGui(RFigureCore,QtWidgets.QMainWindow):
 		self.table_variables.updateFromDict()
 		self.editor_python.setPlainText(self.instructions)
 		self.editor_commentaries.setText(self.commentaries)
-		self.lineEdit_filename.setText(self.filename)
-		self.lineEdit_dirpath.setText(self.dirpath)
+		# self.lineEdit_filename.setText(self.filename)
 
 
-	def formatName(self,checked=False,filename=None,onlyExt=False):
-		if filename==None:
-			filename = str(self.lineEdit_filename.text())
-		RFigureCore.formatName(self,filename=filename,onlyExt=onlyExt)
-		self.lineEdit_filename.setText(self.filename)
-		return self.filename
 
 	def make_list_variables(self):
 		self.instructions	=str(self.editor_python.text())
@@ -694,14 +635,150 @@ class RFigureGui(RFigureCore,QtWidgets.QMainWindow):
 		self.editor_console.setTextCursor(cursor)
 		self.editor_console.ensureCursorVisible()
 
-	def checkDirpath(self,text=None):
-		dirpath = str(self.lineEdit_dirpath.text())
-		palette = self.lineEdit_dirpath.palette()
+
+
+	def isModified(self):
+		return self.editor_commentaries.document().isModified() or self.editor_console.document().isModified()
+
+
+
+
+class RFigureMainWindow(QtWidgets.QMainWindow):
+	def __init__(self,*args,**kargs):
+		QtWidgets.QMainWindow.__init__(self,*args,**kargs)
+		self.rFigureWidget = RFigureGui(self)
+
+		self.actionOpen = QtWidgets.QAction("Open",self)
+		self.actionSave = QtWidgets.QAction("Save",self)
+		self.actionSaveAs = QtWidgets.QAction("SaveAs",self)
+		self.actionClose = QtWidgets.QAction("Close",self)
+		self.actionFormatName = QtWidgets.QAction("Format",self)
+
+		self.lineEdit_filepath = QtWidgets.QLineEdit(
+							self.rFigureWidget.formatName('./figures/'))
+		self.button_formatname = QtWidgets.QPushButton("Format Name")
+
+		### Connections
+		self.actionOpen.triggered.connect(self.slotOpen)
+		self.actionSave.triggered.connect(self.slotSave)
+		self.actionSaveAs.triggered.connect(self.slotSaveAs)
+		self.actionClose.triggered.connect(self.close)
+		self.lineEdit_filepath.textChanged.connect(self.checkDirpath)
+		self.button_formatname.clicked.connect(self.slotFormatName)
+
+
+		self.actionSave.setShortcuts(QtGui.QKeySequence.Save)
+		self.actionSaveAs.setShortcuts(QtGui.QKeySequence.SaveAs)
+		self.actionOpen.setShortcuts(QtGui.QKeySequence.Open)
+		self.actionClose.setShortcuts(QtGui.QKeySequence.Close)
+
+
+
+		toolbar = self.addToolBar('')
+		toolbar.addAction(self.actionOpen)
+		toolbar.addAction(self.actionSave)
+		toolbar.addAction(self.actionSaveAs)
+		toolbar.addAction(self.actionClose)
+
+
+
+		self.setWindowTitle('RFigureGui 3 : Save matplotlib figure')
+		self.setWindowIcon(QtGui.QIcon(os.path.join(file_dir,'images/logo.png')))
+
+
+		# wid_line = QtWidgets.QWidget()
+		# wid_line.setSizePolicy( QtWidgets.QSizePolicy.Expanding,
+			# QtWidgets.QSizePolicy.Fixed)
+		wid_layout = QtWidgets.QHBoxLayout()
+		wid_layout.addWidget(QtWidgets.QLabel("File path:"))
+		wid_layout.addWidget(self.lineEdit_filepath)
+		wid_layout.addWidget(self.button_formatname)
+		# wid_line.setLayout(wid_layout)
+
+		main_layout = QtWidgets.QVBoxLayout()
+		main_layout.addWidget(self.rFigureWidget)
+		main_layout.addLayout(wid_layout)
+
+
+		centralWidget = QtWidgets.QWidget()
+		centralWidget.setLayout(main_layout)
+
+		self.setCentralWidget(centralWidget)
+
+
+		self.checkDirpath()
+
+
+
+
+	@QtCore.pyqtSlot()
+	def slotOpen(self,filepath=None):
+		self.checkBeforeClose()
+		if filepath is None:
+			filepath = QtWidgets.QFileDialog(self).getOpenFileName()[0]
+			if not filepath:
+				return False
+		self.rFigureWidget.open(filepath)
+		self.lineEdit_filepath.setText(filepath)
+
+
+	@QtCore.pyqtSlot()
+	def slotSave(self,filepath=None):
+		if filepath is None:
+			filepath = str(self.lineEdit_filepath.text()).strip()
+			if len(filepath)==0:
+				return self.slotSaveAs()
+		filepath = self.rFigureWidget.formatName(filepath,onlyExt=True)
+		self.rFigureWidget.save(filepath)
+		self.lineEdit_filepath.setText(filepath)
+
+	@QtCore.pyqtSlot()
+	def slotSaveAs(self):
+		filepath = QtWidgets.QFileDialog(self).getSaveFileName()[0]
+		if not filepath:
+			return False
+		self.slotSave(filepath)
+
+	@QtCore.pyqtSlot()
+	def slotFormatName(self):
+		filepath = str(self.lineEdit_filepath.text())
+		filepath = self.rFigureWidget.formatName(filepath)
+		self.lineEdit_filepath.setText(filepath)
+
+
+	def checkBeforeClose(self):
+		if self.rFigureWidget.isModified():
+			res=QtWidgets.QMessageBox.question(
+					self,
+					"Modification", "Do you want to save the modifications",
+					QtWidgets.QMessageBox.Yes | QtWidgets.QMessageBox.No | \
+					QtWidgets.QMessageBox.Cancel
+					)
+			if (res == QtWidgets.QMessageBox.Yes):
+				self.slotSave()
+			return res
+		return QtWidgets.QMessageBox.Yes
+
+	def closeEvent(self, event):
+		"""Check if we have changed something without saving"""
+		res=self.checkBeforeClose()
+		if (res == QtWidgets.QMessageBox.Yes) or (res == QtWidgets.QMessageBox.No):
+			event.accept()
+		else:
+			event.ignore()
+
+	def checkDirpath(self):
+		filepath = str(self.lineEdit_filepath.text())
+		dirpath,_ = os.path.split(filepath)
+		palette = self.lineEdit_filepath.palette()
 		if os.path.exists(os.path.abspath(dirpath)):
 			palette.setColor( QtGui.QPalette.Text, QtCore.Qt.green)
 		else:
 			palette.setColor( QtGui.QPalette.Text, QtCore.Qt.red)
-		self.lineEdit_dirpath.setPalette(palette)
+		self.lineEdit_filepath.setPalette(palette)
+		self.rFigureWidget.filepath = filepath
+
+
 
 class TableVariables(QtWidgets.QTableWidget):
 	"""
@@ -853,13 +930,15 @@ if __name__ == '__main__':
 	if len(sys.argv)>1:
 		f = ' '.join(sys.argv[1:])
 		if f[-len(RFigureCore.ext):]== RFigureCore.ext:
-			sf=RFigureGui.load(f)
+			sf=RFigureMainWindow
+			sf.slotOpen(f)
 		elif f[-len(RFigureCore.ext):]== '.rfig2':
 			sf = convert_2_to_3(f,gui=True)
 		else:
-			print("ext",f[-len(RFigureCore.ext):])
 			sf = convert_1_to_3(f,gui=True)
 	else:
-		sf=RFigureGui(instructions='',dict_variables={})
+		# sf=RFigureGui(instructions='',dict_variables={})
+		sf=RFigureMainWindow()
+		sf.show()
 	# sys.excepthook = my_excepthook
 	sys.exit(app.exec_())
