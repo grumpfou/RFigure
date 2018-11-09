@@ -141,11 +141,13 @@ class RFigureCore:
 		else:
 			dirpath = '.'
 		matplotlib.pyplot.close('all')
-		fid = open (path_to_header,'r')
-		try :
-			instructions = fid.read()
-		finally:
-			fid.close()
+		if os.path.exists(path_to_header):
+			with  open (path_to_header,'r') as fid:
+				instructions = fid.read()
+		else:
+			print("Could not find the path to header")
+			instructions = ""
+
 		instructions +='\n\n'
 
 		if not dirpath is None:
@@ -215,6 +217,12 @@ class RFigureCore:
 		return paths
 
 	def savefig(self,fig_path,fig_type='png'):
+		"""Method that will save the figure with the corresponding extention
+		- fig_path: the path of where to save the figure the figure
+		- fig_type: the type of the figure, should be in ["eps","pdf",'png']
+		"""
+		assert fig_type in ["eps","pdf",'png']
+
 		dirpath,_=os.path.split(fig_path)
 		if fig_type not in self.fig_type_list and not (fig_type is None):
 			raise ValueError('fig_type should be in '+str(self.fig_type_list))
@@ -257,6 +265,8 @@ class RFigureCore:
 		return paths
 
 	def clean_instructions(self):
+		"""Ensure that the instruction are idented at the the first level.
+		"""
 		current_instructions = self.instructions[:]
 		list_lines = current_instructions.split('\n')
 		# list_lines = [line.rstrip() for line in list_lines]
@@ -277,11 +287,6 @@ class RFigureCore:
 		self.instructions='\n'.join(list_lines)
 
 		self.instructions = self.instructions.split(self.file_split)[-1]
-		# ii =  self.instructions.find(self.file_split)
-		# if ii>0:
-		# 	self.instructions=self.instructions[ii:]
-		# 	f = self.instructions[:ii]
-		# 	f = f.replace('\n','\n>>> ')
 
 	def find_list_variables(self,in_globals_var=True):
 		def empty():pass
@@ -321,6 +326,7 @@ class RFigureCore:
 
 
 	def open(self,filepath,globals_var=None):
+		"""Open the rfig file from filepath"""
 		if not os.path.exists(filepath):
 			fig_path += self.ext
 			assert os.path.exists(filepath), filepath+" does not exist."
@@ -332,8 +338,6 @@ class RFigureCore:
 		self.globals_var = globals_var
 		self.dict_variables = o[0]
 		self.filepath = filepath
-
-
 
 
 	@classmethod
@@ -512,6 +516,8 @@ class RFigureGui(RFigureCore,QtWidgets.QWidget):
 		# actionSave 				.triggered.connect(self.save)
 		actionClAll				.triggered.connect(self.closeAll)
 
+
+
 		QtWidgets.QMainWindow.show(self)
 		self.uploadDataToGui()
 
@@ -524,7 +530,8 @@ class RFigureGui(RFigureCore,QtWidgets.QWidget):
 	def save(self,filepath=None):
 		"""
 		The saving function called by pushon the 'Save' button.
-		Ask for confirmation and automotically asave the .png in the same time.
+		Ask for confirmation and automotically save the imgae (png,pdf or eps)
+		in the same time.
 		"""
 		if filepath is None:
 			filepath = self.filepath
@@ -562,6 +569,8 @@ class RFigureGui(RFigureCore,QtWidgets.QWidget):
 				QtWidgets.QMessageBox.information ( self, "No saving", msg)
 
 	def open(self,filepath):
+		"""Open the rfig file from the corresponding filepath.
+		"""
 		sf = RFigureCore.open(self,filepath)
 		self.uploadDataToGui()
 
@@ -605,28 +614,36 @@ class RFigureGui(RFigureCore,QtWidgets.QWidget):
 
 
 	def uploadDataToGui(self):
+		""" Update the instructions, the comments and the variables in the
+		graphical interface
+		"""
 		self.table_variables.setRowCount(len(self.dict_variables))
 		for i,k in enumerate(self.dict_variables.keys()):
 			self.table_variables.setItem(i,0,QtWidgets.QTableWidgetItem(k))
 		self.table_variables.updateFromDict()
 		self.editor_python.setPlainText(self.instructions)
 		self.editor_commentaries.setText(self.commentaries)
+		self.editor_python.document().setModified(False)
+		self.editor_commentaries.document().setModified(False)
 		# self.lineEdit_filename.setText(self.filename)
 
 
 
 	def make_list_variables(self):
+		"""Detect all the variables in the instructions"""
 		self.instructions	=str(self.editor_python.text())
 		ll = self.find_list_variables(in_globals_var=True)
 		self.input_dict_from_list(ll)
 		self.table_variables.updateFromDict()
 
 	def closeEvent(self,event):
+		"""Reimplementation to close all the figures.
+		"""
 		matplotlib.pyplot.close('all')
 		QtWidgets.QWidget.closeEvent(self,event)
 
 	def outputWritten(self, text):
-		"""Append text to the QTextEdit."""
+		"""Appends text to the console"""
 		# Maybe QTextEdit.append() works as well, but this is how I do it:
 		sys.__stdout__.write(text)
 		cursor = self.editor_console.textCursor()
@@ -635,10 +652,8 @@ class RFigureGui(RFigureCore,QtWidgets.QWidget):
 		self.editor_console.setTextCursor(cursor)
 		self.editor_console.ensureCursorVisible()
 
-
-
 	def isModified(self):
-		return self.editor_commentaries.document().isModified() or self.editor_console.document().isModified()
+		return self.editor_commentaries.document().isModified() or self.editor_python.document().isModified()
 
 
 
@@ -715,7 +730,7 @@ class RFigureMainWindow(QtWidgets.QMainWindow):
 	def slotOpen(self,filepath=None):
 		self.checkBeforeClose()
 		if filepath is None:
-			filepath = QtWidgets.QFileDialog(self).getOpenFileName()[0]
+			filepath = QtWidgets.QFileDialog().getOpenFileName(self)[0]
 			if not filepath:
 				return False
 		self.rFigureWidget.open(filepath)
@@ -734,7 +749,7 @@ class RFigureMainWindow(QtWidgets.QMainWindow):
 
 	@QtCore.pyqtSlot()
 	def slotSaveAs(self):
-		filepath = QtWidgets.QFileDialog(self).getSaveFileName()[0]
+		filepath = QtWidgets.QFileDialog().getSaveFileName(self)[0]
 		if not filepath:
 			return False
 		self.slotSave(filepath)
@@ -915,8 +930,7 @@ else:
 	app = QtWidgets.QApplication.instance()
 
 
-
-if __name__ == '__main__':
+def main(argv):
 	iconpath = '/home/dessalles/.local/share/icons/hicolor/256x256/rfigure.ico'
 	app.setWindowIcon(QtGui.QIcon(iconpath))
 
@@ -927,18 +941,25 @@ if __name__ == '__main__':
 	# 		msgBox=QtWidgets.QMessageBox.critical(sf, type.__name__, type.__name__+'\n'+res+'\n'+tback)
 	# 	sys.__excepthook__(type, value, tback)
 	# 	msgBox.show()
-	if len(sys.argv)>1:
-		f = ' '.join(sys.argv[1:])
+	if len(argv)>1:
+		f = ' '.join(argv[1:])
 		if f[-len(RFigureCore.ext):]== RFigureCore.ext:
-			sf=RFigureMainWindow
+			sf=RFigureMainWindow()
 			sf.slotOpen(f)
 		elif f[-len(RFigureCore.ext):]== '.rfig2':
 			sf = convert_2_to_3(f,gui=True)
 		else:
 			sf = convert_1_to_3(f,gui=True)
+		sf.show()
 	else:
 		# sf=RFigureGui(instructions='',dict_variables={})
 		sf=RFigureMainWindow()
 		sf.show()
 	# sys.excepthook = my_excepthook
 	sys.exit(app.exec_())
+
+
+
+
+if __name__ == '__main__':
+	main(sys.argv)
