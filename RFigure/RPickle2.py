@@ -4,7 +4,7 @@
 from __future__ import absolute_import, division, print_function,unicode_literals
 import numpy as np
 import os,gzip
-import RPickle
+from . import  RPickle
 import subprocess
 
 __version__ = "2"

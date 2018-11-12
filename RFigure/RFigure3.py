@@ -22,10 +22,10 @@ import tempfile
 import re
 import traceback
 import sys
-import RPickle2
-from RMisc import RDateDisplay, RTextWrap
+from . import RPickle2
+from .RMisc import RDateDisplay, RTextWrap
 from PyQt5 import QtGui, QtCore,QtWidgets
-from REditors import RPythonEditor,RMarkdownEditor
+from .REditors import RPythonEditor,RMarkdownEditor
 from matplotlib.backends.backend_pdf import PdfPages
 
 __version__ = '3'
