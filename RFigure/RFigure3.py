@@ -426,7 +426,7 @@ class RFigureGui(RFigureCore,QtWidgets.QWidget):
 		- commentaries : the comments to add to the file
 		- filename : the default name file.
 		"""
-		QtWidgets.QMainWindow.__init__(self,parent=parent)
+		QtWidgets.QWidget.__init__(self,parent=parent)
 		RFigureCore.__init__(self,*args,**kargs)
 
 
@@ -567,6 +567,9 @@ class RFigureGui(RFigureCore,QtWidgets.QWidget):
 				d,_ = os.path.split(filepath)
 				msg = "The directory %s does not exist."%d
 				QtWidgets.QMessageBox.information ( self, "No saving", msg)
+			else:
+				self.editor_python.document().setModified(False)
+				self.editor_commentaries.document().setModified(False)
 
 	def open(self,filepath):
 		"""Open the rfig file from the corresponding filepath.
