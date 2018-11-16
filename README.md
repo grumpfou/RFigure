@@ -30,12 +30,14 @@ pip install --user pyqt5
 python setup.py install --user
 ```
 
-***Note:*** It is possible by that using the ```--user``` option, the script
-**rfig** is not saved in a directory which is is in the path. In that case,
+***Note:*** It is possible that by using the ```--user``` option, the script
+**rfig** is not saved in a directory which is in the path. In that case,
 be sure to add the directory that contains **rfig** (usually ~/.local/bin/) to
 the path manually (see <https://askubuntu.com/questions/799302/ubuntu-cant-find-an-executable-file-in-local-bin>)
 
-## Quick Example
+
+## Usages
+### Quick Example with console
 
 Open Python terminal and try:
 ```
@@ -46,15 +48,44 @@ i = "plot(X,Y)" # the instrucutions
 d = dict(X=X,Y=Y) # the data to display
 c = "This is a test" # the commentaries associate with the figures
 rf = RFigure.RFigureCore(d=d,i=i,c=c)
-rf.show() # execute the instrucutions to be sure it works
+rf.show() # execute the instructions to be sure it works
 rf.save(filepath='./Test.rfig3') # only save the rfig3 file
 rf.save(filepath='./Test.rfig3',fig_type='pdf') # save the rfig3 file as well as the pdf associated
 ```
+Note that the data contained in `d` should be either `int`,`float`,`np.ndarray`,
+`str`,`bool` or data collections (`list`, `tuple` or `dict`) that contains
+supported types.
+
+### Example with graphical application
 Once a rfig3 file is saved, one can use the graphical interface to modify the
-instructions using the script **rfig**:
+instructions using the script automatically installed **rfig**:
 > $ rfig ./Test.rfig3
 
+In which case you have the following interface:
 ![](./ExampleGui.png)
+
+### Example using a magic function in Jupyter notebooks (IPython)
+A Jupyter magic function exists to automatically save figures from Jupyter
+notebooks. It is available in the RFigure.RFigureMagics script.
+
+To import the magic in the Jupyter notebook, use:
+```
+%load_ext RFigure.RFigureMagics
+```
+Then you can directly save RFigures using the `%%rfig` magic function: you
+specify the name of the file and it will create a RFigure according by taking
+the instructions of the cell as in the follow example:
+```
+In[1]:
+> a = np.arange(0,10,.1)
+> b = np.cos(a)
+
+In[2]:
+> %%rfig "Test"
+> # search the variables in the instructions, no comment and save in pdf
+> plt.plot(a,b)
+```
+The magic function tries to  automatically detect what local variables need to be save (in the example, `a`  and `b`).
 
 ## How the code is organized
 
@@ -88,21 +119,21 @@ Jupyter/IPython)
     - Ctrl+↓ will move line(s) down
     - Ctrl+Shift+D will duplicate the line(s)
     - Ctrl+Shift+K will delete the line(s)
-- SF_INSTRUCTIONS command: when the instructions in input contained at some
+- SF_INSTRUCTIONS command: (depreciated, use the magic function `%%rfig` instead) when the instructions in input contained at some
 point the line
 > \#! SF_INSTRUCTIONS
 
-the program consider the instruction begins only at this point. It is useful
+the program considers the instructions begin only at this point. It is useful
 when using it with a Jupyter notebook:
 ```
-**In[]:**
-X = numpy.arange(0,10,0.1)
-d=dict(X=X)
-rf = RFigure3.RFIgureCore(i=In[-1],d=d)
-rf.save(filepath='./Test.rfig3')
-#! SF_INSTRUCTIONS
-X=arange(0,10,0.1)
-plot(X,cos(X))
+In[]:
+> X = numpy.arange(0,10,0.1)
+> d=dict(X=X)
+> rf = RFigure3.RFIgureCore(i=In[-1],d=d)
+> rf.save(filepath='./Test.rfig3')
+> #! SF_INSTRUCTIONS
+> X=arange(0,10,0.1)
+> plot(X,cos(X))
 ```
 Will save figure whose instructions are the last lines of the cell.
 

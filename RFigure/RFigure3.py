@@ -934,7 +934,7 @@ else:
 
 
 def main(argv):
-	iconpath = '/home/dessalles/.local/share/icons/hicolor/256x256/rfigure.ico'
+	iconpath = of.path.join(os.path.split(__file__)[0],'logo.png')
 	app.setWindowIcon(QtGui.QIcon(iconpath))
 
 	sf=QtWidgets.QWidget()

@@ -1,6 +1,6 @@
 from setuptools import setup, find_packages
 
-setup(name='rfigure_tmp',
+setup(name='rfigure',
       version='3.0',
       description='Creation and edition of figures with Python',
       long_description="""RFigure is a program that deals save in a specific file (whose extension is
