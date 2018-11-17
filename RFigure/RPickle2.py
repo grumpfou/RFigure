@@ -1,10 +1,13 @@
-# PYTHON 3
+																																																																																																																																																								# PYTHON 3
 # This script aims to replace RPickle which has some problems with the
-# unicode in np.ndarray
+																																																																						# unicode in np.ndarray
 from __future__ import absolute_import, division, print_function,unicode_literals
 import numpy as np
 import os,gzip
-from . import  RPickle
+try:
+	from . import  RPickle
+except:
+	import  RPickle # for backward compatities with python2
 import subprocess
 
 __version__ = "2"

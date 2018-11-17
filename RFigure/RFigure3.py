@@ -934,7 +934,7 @@ else:
 
 
 def main(argv):
-	iconpath = of.path.join(os.path.split(__file__)[0],'logo.png')
+	iconpath = os.path.join(os.path.split(__file__)[0],'logo.png')
 	app.setWindowIcon(QtGui.QIcon(iconpath))
 
 	sf=QtWidgets.QWidget()
