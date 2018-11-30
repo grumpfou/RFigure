@@ -81,7 +81,7 @@ In[1]:
 > b = np.cos(a)
 
 In[2]:
-> %%rfig "Test"
+> %%rfig_save "Test"
 > # search the variables in the instructions, no comment and save in pdf
 > plt.plot(a,b)
 ```
@@ -119,7 +119,7 @@ Jupyter/IPython)
     - Ctrl+↓ will move line(s) down
     - Ctrl+Shift+D will duplicate the line(s)
     - Ctrl+Shift+K will delete the line(s)
-- SF_INSTRUCTIONS command: (deprecated, use the magic function `%%rfig` instead) when the instructions in input contained at some
+- SF_INSTRUCTIONS command: (deprecated, use the magic function `%%rfig_save` instead) when the instructions in input contained at some
 point the line
 > \#! SF_INSTRUCTIONS
 
@@ -139,8 +139,6 @@ Will save figure whose instructions are the last lines of the cell.
 
 ## FAQ
 
-- Why is it RFigure3 (and not 2 or 1) and RPickle2 (and not 1)?
-  I had several personal versions of these libraries.
 - Why there is a 'R' in front of the modules?
   Because my first name is **R**enaud
 - Why do not use the default pickle library of Python ?
