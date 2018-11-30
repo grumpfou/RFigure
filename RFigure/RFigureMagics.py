@@ -1,7 +1,8 @@
-import RFigure,os,re,sys
+from . import RFigureCore
+import os,re,sys
 import numpy as np
 from IPython.core.magic import  (Magics, magics_class, line_magic,
-                                cell_magic, line_cell_magic)
+								cell_magic, line_cell_magic)
 def find_list_variables(instructions,locals_):
 	vars_ = re.findall(r'\b[a-zA-Z_][a-zA-Z0-9_]*\b',instructions)
 	vars_ = list(set(vars_))
@@ -9,7 +10,7 @@ def find_list_variables(instructions,locals_):
 	vars_ = [a for a in vars_ if type(locals_[a]) in {np.ndarray,list,int,float,str,bool}]
 	return vars_
 
-def find_vars_dict(cell):
+def find_ipython_locals():
 	i=0
 	while True:
 		try:
@@ -20,6 +21,10 @@ def find_vars_dict(cell):
 			ipy_locals = f.f_locals
 			break
 		i+= 1
+	return ipy_locals
+
+def find_vars_dict(cell):
+	ipy_locals = find_ipython_locals()
 	vars_ = find_list_variables(instructions=cell,locals_=ipy_locals)
 	d = {k:ipy_locals[k] for k in vars_}
 	return d
@@ -27,7 +32,7 @@ def find_vars_dict(cell):
 @magics_class
 class RFigureMagics(Magics):
 	@cell_magic
-	def rfig(self,line, cell):
+	def rfig_save(self,line, cell):
 		""" Will save a RFigure, whose instructions are the the code written in the
 		remaining of the cell.
 
@@ -50,29 +55,29 @@ class RFigureMagics(Magics):
 
 		The rest of the cell will represent the instructions to save in the RFigure.
 
-		Examples (in IPython):
+		Examples (in IPython/Jupyter):
 
 		In[1]:
 		> a = np.arange(0,10,.1)
 		> b = np.cos(a)
 
 		In[2]:
-		> %%rfig "Test"
+		> %%rfig_save "Test"
 		> # search the variables in the instructions, no comment and save in pdf
 		> plt.plot(a,b)
 
 		In[3]:
-		> %%rfig "Test",None,"This is a comment"
+		> %%rfig_save "Test",None,"This is a comment"
 		> # search the variables in the instructions, with a comment and save in pdf
 		> plt.plot(a,b)
 
 		In[4]:
-		> %%rfig "Test",None,None, 'png'
+		> %%rfig_save "Test",None,None, 'png'
 		> # search the variables in the instructions, no comment and save in png
 		> plt.plot(a,b)
 
 		In[5]:
-		> %%rfig "Test",{"a":np.arange(-1,1,.1),"b":1/np.arange(-1,1,.1)}
+		> %%rfig_save "Test",{"a":np.arange(-1,1,.1),"b":1/np.arange(-1,1,.1)}
 		> # specify other variables, no coment, save in pdf
 		> plt.plot(a,b)
 		"""
@@ -80,7 +85,7 @@ class RFigureMagics(Magics):
 
 		if line.strip()=="":
 			raise ValueError('Specify the RFigure file name.')
-		line = eval(line)
+		line = eval(line,find_ipython_locals())
 		if not type(line)==tuple or type(line)==list:
 			line = (line,)
 

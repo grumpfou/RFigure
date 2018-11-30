@@ -2,3 +2,5 @@
 *noGithub/*
 *.pyc
 rfigure.egg-info/*
+build/*
+dist/*

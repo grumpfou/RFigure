@@ -19,7 +19,7 @@ In a terminal, go in the same folder in which the sources have been installed, a
 
 ```
 pip install pyqt5
-python setup.py install
+pip install .
 ```
 You need to install PyQt5 independently because it can not be directly be
 installed using setuptools of Python. (cf <https://stackoverflow.com/questions/4628519/is-it-possible-to-require-pyqt-from-setuptools-setup-py>).
@@ -27,7 +27,7 @@ installed using setuptools of Python. (cf <https://stackoverflow.com/questions/4
 Alternately, you can explicitly save in you user directories using:
 ```
 pip install --user pyqt5
-python setup.py install --user
+pip install --user .
 ```
 
 ***Note:*** It is possible that by using the ```--user``` option, the script
@@ -119,7 +119,7 @@ Jupyter/IPython)
     - Ctrl+↓ will move line(s) down
     - Ctrl+Shift+D will duplicate the line(s)
     - Ctrl+Shift+K will delete the line(s)
-- SF_INSTRUCTIONS command: (depreciated, use the magic function `%%rfig` instead) when the instructions in input contained at some
+- SF_INSTRUCTIONS command: (deprecated, use the magic function `%%rfig` instead) when the instructions in input contained at some
 point the line
 > \#! SF_INSTRUCTIONS
 

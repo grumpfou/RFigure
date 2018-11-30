@@ -1,4 +1,4 @@
 #!/usr/bin/python3
-import RFigure,sys
-RFigure.main(sys.argv)
-
+import RFigure.RFigureGui
+import sys
+RFigure.RFigureGui.main(sys.argv)
