@@ -6,8 +6,8 @@ __tmp_dict__ = dict()
 __list_protected__ = {'e','pi'}
 for  var in __list_protected__:
 
-	if var in globals().keys():
-		__tmp_dict__[var] = globals()[var]
+    if var in globals().keys():
+        __tmp_dict__[var] = globals()[var]
 
 import matplotlib
 matplotlib.rcParams.update({'font.size': 20})
@@ -21,6 +21,6 @@ import matplotlib._pylab_helpers
 import matplotlib.pyplot as plt
 
 if len(__tmp_dict__)>0 :
-	globals().update(__tmp_dict__)
+    globals().update(__tmp_dict__)
 
 ##### Script : ####
