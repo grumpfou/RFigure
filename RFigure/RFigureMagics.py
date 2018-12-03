@@ -58,6 +58,7 @@ class RFigureMagics(Magics):
         Examples (in IPython/Jupyter):
 
         In[1]:
+        > import numpy as np
         > a = np.arange(0,10,.1)
         > b = np.cos(a)
 
@@ -129,7 +130,7 @@ class RFigureMagics(Magics):
                                         str(RFigure.RFigureCore.fig_type_list))
 
 
-        rf = RFigure.RFigureCore(d=d,i=cell,c=c)
+        rf = RFigureCore(d=d,i=cell,c=c)
         rf.save(filepath=str(filepath),fig_type=fig_type)
 
 def load_ipython_extension(ipython):
