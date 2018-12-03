@@ -36,100 +36,57 @@ path_to_header = os.path.join(file_dir,path_to_header)
 class RFigureCore:
     ext = '.rfig3'
     fig_type_list=['eps','pdf','png']
-    def __init__(self,dict_variables=None,instructions=None,file_to_run=None,
-            commentaries=None,file_split="#! SF_INSTRUCTIONS",
-            globals_var=None,d=None,i=None,c=None):
+    def __init__(self,
+            d=None,i=None,c=None,
+            file_split="#! SF_INSTRUCTIONS",
+            filepath=None):
         """
         This function will save the figure into a propper way, in order to open
         it again.
-        - dict_variables [alias: d]: dictionnary that contain the variable
-            usefull to plot the figure.
-        - instructions [alias: i] : string that contains the python code to
-            create the figure.
-        - commentaries [alias: c]: some additive string used to comment the
+        - d : dict
+            dictionnary that contain the variable usefull to plot the figure.
+        - i : str
+            instructions, string that contains the python code to create the
             figure.
-        - file_to_run : the file containing the instruction (if
-            instructions==None)
-        - file_split : if file_to_run, file_split it the string that will
-            separate the file_to_run. What will be bollow the first instance of
-            file_split will be considered as the instructions. If the
-            instructions will ne be encountered, then it take the whole file as
-            instructions.
-        - globals_var : the globals variables that will be the pool of the
-            variables used in figures.
+        - c : str
+            commentaries where the user can describe the figure.
+        - file_split : str
+            file_split it the string that will separate the instructions. What
+            will be bollow the first instance of will be considered as the
+            instructions. If `file_split` string is not encontrered, keeps the
+            whole isntructions
+        - filepath : str
+            the path to the file (usefull for the local header and to directly
+            save the file)
 
-        Usage:
-        > d = dict{A=range(10)} # The dict containing the variables of the file
-        > i = "plot(A)\ntitle('Example')" # The instrictions to execute
-        > comment = "This is a test" # The comments associate with the file
-        > rf = RFigureCore(d=d,i=i,c=comment)
-        > rf.show() # Show the results
-        > rf.save(dirpath='.',filename="Test") # Save the rfig3 file
-        > rf.save(dirpath='.',filename="Test",fig_type='pdf') # Save the rfig3 file
-        >                                                   # with the pdf file
+        Example:
+        ```
+        import RFigure,numpy
+        X = numpy.arange(0,10,0.1)
+        Y = numpy.cos(X)
+        i = "plot(X,Y)" # the instrucutions
+        d = dict(X=X,Y=Y) # the data to display
+        c = "This is a test" # the commentaries associate with the figures
+        rf = RFigure.RFigureCore(d=d,i=i,c=c)
+        rf.show() # execute the instructions to be sure it works
+        rf.save(filepath='./Test.rfig3') # only save the rfig3 file
+        rf.save(filepath='./Test.rfig3',fig_type='pdf') # save the rfig3 file as well as the pdf associated
+        ```
         """
-        # Deals with synonyms :
-        assert instructions==None or i==None
-        assert dict_variables==None or d==None
-        assert commentaries==None or c==None
-
-        if i!=None : instructions=i
-        if d!=None : dict_variables=d
-        if c!=None : commentaries=c
-
-        if instructions==None and file_to_run==None:
-            instructions=""
-
-        ### We put the commentaries
-        if commentaries!=None:
-            self.commentaries=commentaries
-        else:
-            self.commentaries=""
-
+        self.instructions = "" if i is None else i
+        self.commentaries = "" if c is None else c
+        self.dict_variables = {} if d is None else d
         self.file_split = file_split
-
-        ### We put the instructions either from the instructions or from the
-        ### file
-        if file_to_run!=None:
-
-            self.commentaries += 'Script '+ file_to_run+':\n'
-            try:
-                fid=open(file_to_run)
-                self.instructions=fid.read()
-
-            finally:
-                fid.close()
-
-        else:
-            self.instructions=instructions
 
         self.clean_instructions() # we clean the instructions
 
-        self.filepath = None
-        ### We put the variables
-        self.globals_var=globals_var
-        self.dict_variables= {}
-        if dict_variables==None :
-            if self.globals_var!=None:
-                ll = self.find_list_variables(in_globals_var=True)
-                self.input_dict_from_list(ll)
+        self.filepath = filepath
 
-        elif type(dict_variables)==list :
-            if self.globals_var!=None:
-                self.input_dict_from_list(dict_variables)
-            else :
-                raise BasicError('If you provide a list of variables, you '+\
-                        'should provide the global_var dictionary')
-        elif type(dict_variables)==dict:
-            self.dict_variables=dict_variables
-        else:
-            raise TypeError('dict_variables should be either a dict either a'+\
-                    'list of names')
 
 
     def execute(self):
         """
-        Will plot the figure.
+        The method executes the instructions (no `show` at the end).
         """
         if self.filepath!=None:
             dirpath,_ = os.path.split(self.filepath)
@@ -148,17 +105,12 @@ class RFigureCore:
         if not dirpath is None:
             path_to_header_local = os.path.join(dirpath,'./.RFigureHeaderLocal.py')
         if os.path.exists(path_to_header_local):
-            fid = open (path_to_header_local,'r')
-            try :
+            with open (path_to_header_local,'r') as fid:
                 s = fid.read()
                 instructions += s
-            finally:
-                fid.close()
-
 
         nb_line_header = len(instructions.split('\n'))
         instructions+=self.instructions
-
 
         try:
             exec(instructions,self.dict_variables.copy())
@@ -183,23 +135,24 @@ class RFigureCore:
         matplotlib.pyplot.show()
 
 
-    def save(self,filepath=None,fig_type=False,formatName=True):
+    def save(self,filepath=None,fig_type=False,check_ext=True):
         """
-        Will save the figure in a rfig file. The name of the file will be as
-        follow :
-                "Figure_" + date + decr + ".rfig"
-        - filepath : the filepath where to save the figure
-        - decr : short string that qualify the function
+        Will save the figure in a rfig file.
+        - filepath : str
+            The filepath where to save the figure. Adds the extension if
+            necessary. If None, search the attribute self.filepath (if
+            self.filepath also None, raise an error). Is not None, set
+            `self.filepath` to the new file path.
         - fig_type : if not False, will save the figure in the corresponding
             format. Should be in [False,'png','pdf','eps']
-        - formatName: if True will format the file path: if the filename is
-            "test", then the resulting filename will be
-            "Figure_20180510_test.rfig3" (with the date corresponding to
-            today)
-                            if False: will only check the extension
+        - check_ext: bool
+            if True, adds if necessary the extension to filepath
         """
         if filepath is None:
             filepath = self.filepath
+        if filepath is None:
+            raise TypeError("The `filepath` needs to be specified")
+
 
         objects = [self.dict_variables,self.instructions]
 
@@ -213,10 +166,12 @@ class RFigureCore:
 
     def savefig(self,fig_path,fig_type='png'):
         """Method that will save the figure with the corresponding extention
-        - fig_path: the path of where to save the figure the figure
-        - fig_type: the type of the figure, should be in ["eps","pdf",'png']
+        - fig_path : str
+            The path of where to save the figure the figure.
+        - fig_type : str
+            The type of the figure, should be in ["eps","pdf",'png'].
         """
-        assert fig_type in ["eps","pdf",'png']
+        assert fig_type in ["eps","pdf",'png'],"fig_type should be in "+str(["eps","pdf",'png'])
 
         dirpath,_=os.path.split(fig_path)
         if fig_type not in self.fig_type_list and not (fig_type is None):
@@ -283,45 +238,15 @@ class RFigureCore:
 
         self.instructions = self.instructions.split(self.file_split)[-1]
 
-    def find_list_variables(self,in_globals_var=True):
-        def empty():pass
-        res=[]
-        A = re.findall(r'\b[a-zA-Z_][a-zA-Z0-9_]*\b',self.instructions)
-        A=set(A)
-
-        if in_globals_var:
-            if self.globals_var==None:
-                raise BasicError('Can not search in globals_var, it has not '+\
-                    'been specified.')
-            glob_ = self.globals_var
-        else:
-            glob_ = self.dict_variables.keys()
-
-        for n in A:
-            if n in glob_:
-                if (not hasattr(glob_[n], '__call__')) and \
-                    type(glob_[n])!=type(np) :
-                    # if it is not a function or a type
-                    res.append(n)
-        return res
-
-    def input_dict_from_list(self,list):
-        if self.globals_var==None:
-            raise BasicError('Can not search in globals_var, it has not '+\
-                'been specified.')
-
-        new_dict_variables={}
-
-        for key in list:
-            if key not in self.globals_var:
-                raise BasicError('The globals_var has no key ' +str(key))
-            new_dict_variables[key]=self.globals_var[key]
-
-        self.dict_variables=new_dict_variables
 
 
-    def open(self,filepath,globals_var=None):
-        """Open the rfig file from filepath"""
+
+    def open(self,filepath):
+        """Open the rfig file from filepath
+        - filepath: str
+            the path of the rfigure. Set the attribute self.filepath to this
+            value
+        """
         if not os.path.exists(filepath):
             fig_path += self.ext
             assert os.path.exists(filepath), filepath+" does not exist."
@@ -330,14 +255,16 @@ class RFigureCore:
 
         self.commentaries = c
         self.instructions = o[1]
-        self.globals_var = globals_var
         self.dict_variables = o[0]
         self.filepath = filepath
 
 
     @classmethod
-    def load(cls,filepath,globals_var=None):
-        """Return a RFigureCore instance"""
+    def load(cls,filepath):
+        """Return a RFigureCore instance that had openned the rfigure.
+        - filepath: str
+            the path of the rfigure.
+        """
         sfig=cls()
         sfig.open(filepath)
 
@@ -389,24 +316,55 @@ class RFigureCore:
         rfig.save(fig_type=fig_type)
         return rfig
 
-    def formatName(self,filepath=None,onlyExt=False,ext=None):
+    def formatName(self,filepath=None):
         """
-        Will format the filename. Caution, will not update self.filepath
+        Format the filename under the format:
+                "path/Figure_YYYYMMDD_foo.rfig3"
+        where foo is the current filename. If the filpath is already under this
+        foramt, do not change it. It updates the attribute `self.filepath`.
+
+        filepath : str
+            the filepath to format.
+
+        Example (with each time, YYYYMMDD corresponding to the curent date):
+        > rf = RFigureCore(filpath='./foo/faa.rfig3')
+        > print(rf.formatName()) # with the YYYYMMDD corresp. to the curent date
+        "./foo/Figure_20181201_faa.rfig3"
+        > print(rf.formatName(filepath='./foo/fii'))
+        "./foo/Figure_20181201_fii.rfig3"
+        > print(rf.formatName(filepath='./foo/Figure_20181201_fuu.rfig3'))
+        "./foo/Figure_20181201_fuu.rfig3"
         """
-        if ext==None: ext=self.ext
         if filepath is None:
             filepath = self.filepath
         dirpath,filename = os.path.split(filepath)
-        if not onlyExt:
-            if not re.match('^Figure_[0-9]{8}_',filename):
-                filename = 'Figure_'+RDateDisplay.cur_date()+'_'+filename
+        if not re.match('^Figure_[0-9]{8}_',filename):
+            filename = 'Figure_'+RDateDisplay.cur_date()+'_'+filename
+        filepath = os.path.join(dirpath,filename)
+        self.filepath = filepath
+        return filepath
+
+    def formatExt(self,filepath=None,ext=None):
+        """
+        Changes/adds if necessary the extension to the filepath. Update the
+        attribute `self.filepath` accordingly
+        filepath : str
+            the filepath to format.
+        ext :  str
+            the extension (the dot needs to be included). By default, takes
+            `self.ext`.
+
+        """
+        if ext==None: ext=self.ext
+        dirpath,filename = os.path.split(filepath)
         if not filename.endswith(ext):
             filename,_=os.path.splitext(filename)
             filename += ext
 
         filepath = os.path.join(dirpath,filename)
-
+        self.filepath = filepath
         return filepath
+
 
 if __name__ == '__main__':
     from . import RFigureGui

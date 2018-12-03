@@ -85,13 +85,7 @@ class RFigureGui(RFigureCore,QtWidgets.QWidget):
         self.addAction(actionShow)
 
         button_show = QtWidgets.QPushButton('Show')
-        # button_save = QtWidgets.QPushButton('Save')
-        button_addVar = QtWidgets.QPushButton('Add variable')
         button_clAll = QtWidgets.QPushButton('Close All')
-        button_listVar = QtWidgets.QPushButton('Make list var')
-        if self.globals_var==None:
-            button_addVar.setEnabled(False)
-            button_listVar.setEnabled(False)
 
         self.comboBox = QtWidgets.QComboBox()
         self.comboBox.addItems(self.fig_type_list+['None'])
@@ -129,8 +123,6 @@ class RFigureGui(RFigureCore,QtWidgets.QWidget):
         button_show      .clicked.connect(self.show)
         # button_save      .clicked.connect(self.save)
         button_clAll  .clicked.connect(self.closeAll)
-        button_addVar .clicked.connect(self.table_variables.addItem)
-        button_listVar.clicked.connect(self.make_list_variables)
         actionShow                 .triggered.connect(self.show)
         # actionSave                 .triggered.connect(self.save)
         actionClAll                .triggered.connect(self.closeAll)
@@ -224,7 +216,7 @@ class RFigureGui(RFigureCore,QtWidgets.QWidget):
 
 
     @staticmethod
-    def loadFromRFigureCore(rfigcore,globals_var=None):
+    def loadFromRFigureCore(rfigcore):
         """
         Static method used to upgrade a RFigureCore into a RFigureGui
         """
@@ -232,7 +224,6 @@ class RFigureGui(RFigureCore,QtWidgets.QWidget):
         return RFigureGui(dict_variables=rfigcore.dict_variables,
                                 instructions=rfigcore.instructions,
                                 commentaries=rfigcore.commentaries,
-                                globals_var=globals_var
                                 )
 
 
@@ -253,12 +244,6 @@ class RFigureGui(RFigureCore,QtWidgets.QWidget):
 
 
 
-    def make_list_variables(self):
-        """Detect all the variables in the instructions"""
-        self.instructions    =str(self.editor_python.text())
-        ll = self.find_list_variables(in_globals_var=True)
-        self.input_dict_from_list(ll)
-        self.table_variables.updateFromDict()
 
     def closeEvent(self,event):
         """Reimplementation to close all the figures.
@@ -365,7 +350,7 @@ class RFigureMainWindow(QtWidgets.QMainWindow):
             filepath = str(self.lineEdit_filepath.text()).strip()
             if len(filepath)==0:
                 return self.slotSaveAs()
-        filepath = self.rFigureWidget.formatName(filepath,onlyExt=True)
+        filepath = self.rFigureWidget.formatExt(filepath)
         self.rFigureWidget.save(filepath)
         self.lineEdit_filepath.setText(filepath)
 
@@ -378,7 +363,11 @@ class RFigureMainWindow(QtWidgets.QMainWindow):
 
     @QtCore.pyqtSlot()
     def slotFormatName(self):
+        """ Format the current filepath to the format
+                    Figure_YYYYMMDD_foo.rfig3
+        """
         filepath = str(self.lineEdit_filepath.text())
+        filepath = self.rFigureWidget.formatExt(filepath)
         filepath = self.rFigureWidget.formatName(filepath)
         self.lineEdit_filepath.setText(filepath)
 
@@ -427,7 +416,6 @@ class TableVariables(QtWidgets.QTableWidget):
         if list_var==None: list_var=[]
         QtWidgets.QTableWidget.__init__ (self, len(list_var), 2)
         self.setHorizontalHeaderLabels(["Name","Type"])
-        # self.globals_var=globals_var
         self.saveFigureGui=saveFigureGui
         # self.connect(SIGNAL(returnPressed()),ui->homeLoginButton,SIGNAL(clicked()))
 
@@ -459,30 +447,6 @@ class TableVariables(QtWidgets.QTableWidget):
                 self.saveFigureGui.dict_variables[str(res[0])] = v
                 self.updateFromDict()
 
-    def addItem(self):
-        if self.saveFigureGui.globals_var!=None:
-            text, ok  = QInputDialog.getText(self,"Name the variable","Please give the variable's name")
-            if ok:
-                text=str(text)
-                text=text.strip()
-                if text in self.saveFigureGui.dict_variables.keys():
-                    msg = "The variable <"+text+"> already exists!"
-                    QtWidgets.QMessageBox.critical(self, "Variable exists", msg)
-                    self.addItem()
-                elif text not in self.saveFigureGui.globals_var.keys():
-                    msg = "The variable <"+text+"> is not in the pool of variables!"
-                    QtWidgets.QMessageBox.critical(self, "Variable exists", msg)
-                    self.addItem()
-                else :
-                    self.saveFigureGui.dict_variables[text]=self.saveFigureGui.globals_var[text]
-                    msg="We added the variable <"+text+"> of the type <"+\
-                            str(type(self.saveFigureGui.globals_var[text]))+">."
-                    QtWidgets.QMessageBox.information(self, "Variable exists", msg)
-                    self.updateFromDict()
-
-        else:
-            msg= "No dictonary of global variables has been provided."
-            QtWidgets.QMessageBox.critical(self, "Variable exists", msg)
 
     def updateFromDict(self):
         self.setRowCount(len(self.saveFigureGui.dict_variables))
