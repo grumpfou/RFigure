@@ -23,7 +23,7 @@ from .RFigureMisc import  RTextWrap
 from PyQt5 import QtGui, QtCore,QtWidgets
 from .REditors import RPythonEditor,RMarkdownEditor
 from matplotlib.backends.backend_pdf import PdfPages
-from .RFigureCore import RFigureCore
+from .RFigureCore import RFigureCore,__version__
 
 ###################### CONFIG IMPORTATION ##############################
 path_to_header = './RFigureConfig/RFigureHeader.py'
@@ -36,18 +36,10 @@ class RFigureGui(RFigureCore,QtWidgets.QWidget):
         """
         A class that inherit from RFigureCore for the core aspects and QWidget
         for the Gui aspects.
-        - dict_variables : a dictionary that contain the string name of the
-            variable as key, and the variable itself in value
-        - instruction : a string that contain the python code to execute to
-            show the figure using the variables contained in dict_variables
-        - file_to_run : if the instructions are in a different file
-        - commentaries : the comments to add to the file
-        - filename : the default name file.
+        - d,i,c,file_split,filepath :  see RFigureCore docuementation
         """
         QtWidgets.QWidget.__init__(self,parent=parent)
         RFigureCore.__init__(self,*args,**kargs)
-
-
 
         sys.stdout = EmittingStream(textWritten=self.outputWritten)
         sys.stderr = EmittingStream(textWritten=self.outputWritten)
@@ -91,9 +83,6 @@ class RFigureGui(RFigureCore,QtWidgets.QWidget):
         self.comboBox.addItems(self.fig_type_list+['None'])
         self.comboBox.setCurrentIndex(self.comboBox.findText('pdf'))
 
-
-
-
         splitter = QtWidgets.QSplitter(self)
         splitter.addWidget    (self.editor_python)
         splitter.addWidget    (wid_editor)
@@ -116,10 +105,6 @@ class RFigureGui(RFigureCore,QtWidgets.QWidget):
         # wid = QtWidgets.QWidget()
         self.setLayout(main_layout)
 
-
-
-        # self.setCentralWidget(wid)
-
         button_show      .clicked.connect(self.show)
         # button_save      .clicked.connect(self.save)
         button_clAll  .clicked.connect(self.closeAll)
@@ -127,12 +112,8 @@ class RFigureGui(RFigureCore,QtWidgets.QWidget):
         # actionSave                 .triggered.connect(self.save)
         actionClAll                .triggered.connect(self.closeAll)
 
-
-
         QtWidgets.QMainWindow.show(self)
         self.uploadDataToGui()
-
-
 
     def __del__(self):
         # Restore sys.stdout
@@ -140,9 +121,13 @@ class RFigureGui(RFigureCore,QtWidgets.QWidget):
 
     def save(self,filepath=None):
         """
-        The saving function called by pushon the 'Save' button.
-        Ask for confirmation and automotically save the imgae (png,pdf or eps)
-        in the same time.
+        The saving function called by the `Save` button.
+        Ask for confirmation and automotically save the image (png,pdf or eps)
+        at the same time.
+
+        - filepath : str
+            the file where to save the figure (by default, take the
+            `self.filepath` attribute)
         """
         if filepath is None:
             filepath = self.filepath
@@ -152,7 +137,7 @@ class RFigureGui(RFigureCore,QtWidgets.QWidget):
         dirpath , _ = os.path.split(filepath)
         if dirpath=="":
             dirpath    = '.'
-        if not os.path.exists(dirpath):
+        if not os.path.exists(dirpath) :
             msg = "The dirpath \n%s\n does not exists"%dirpath
             res = QtWidgets.QMessageBox.critical ( self, "Error in dirpath",
                 msg,QtWidgets.QMessageBox.Ok)
@@ -172,7 +157,6 @@ class RFigureGui(RFigureCore,QtWidgets.QWidget):
         res = QtWidgets.QMessageBox.question ( self, "Saving confirmation",
             msg,QtWidgets.QMessageBox.Yes | QtWidgets.QMessageBox.Cancel)
 
-
         if (res == QtWidgets.QMessageBox.Yes):
 
             res = RFigureCore.save(self,filepath, fig_type=fig_type)
@@ -186,6 +170,8 @@ class RFigureGui(RFigureCore,QtWidgets.QWidget):
 
     def open(self,filepath):
         """Open the rfig file from the corresponding filepath.
+        - filepath : str
+            the file path of the figure to open
         """
         sf = RFigureCore.open(self,filepath)
         self.uploadDataToGui()
@@ -194,7 +180,7 @@ class RFigureGui(RFigureCore,QtWidgets.QWidget):
     def show(self):
         """
         Show the figure using the variables contained in
-        self.dict_variables and the instructuion in    self.instructions.
+        `self.dict_variables` and the instructuion in `self.instructions`.
         """
         self.instructions=str(self.editor_python.toPlainText())
 
@@ -229,8 +215,8 @@ class RFigureGui(RFigureCore,QtWidgets.QWidget):
 
 
     def uploadDataToGui(self):
-        """ Update the instructions, the comments and the variables in the
-        graphical interface
+        """ Update the attributes `self.instructions`, `self.commentaties`,
+        `self.dict_variables` in the graphical interface.
         """
         self.table_variables.setRowCount(len(self.dict_variables))
         for i,k in enumerate(self.dict_variables.keys()):
@@ -243,16 +229,18 @@ class RFigureGui(RFigureCore,QtWidgets.QWidget):
         # self.lineEdit_filename.setText(self.filename)
 
 
-
-
     def closeEvent(self,event):
-        """Reimplementation to close all the figures.
+        """ Reimplementation of the method to close all the matplotlib figures before
+        closing the widget .
         """
         matplotlib.pyplot.close('all')
         QtWidgets.QWidget.closeEvent(self,event)
 
     def outputWritten(self, text):
-        """Appends text to the console"""
+        """Appends text to the console.
+        - text : str
+            Text to add to the console.
+        """
         # Maybe QTextEdit.append() works as well, but this is how I do it:
         sys.__stdout__.write(text)
         cursor = self.editor_console.textCursor()
@@ -262,11 +250,22 @@ class RFigureGui(RFigureCore,QtWidgets.QWidget):
         self.editor_console.ensureCursorVisible()
 
     def isModified(self):
+        """ Determine if the figure instructions or commentaries have been
+        modified.
+
+        Returns
+        - state : bool
+            True if the instructions or commentaries have been modified since
+            last save.
+        """
         return self.editor_commentaries.document().isModified() or self.editor_python.document().isModified()
 
 
 class RFigureMainWindow(QtWidgets.QMainWindow):
     def __init__(self,*args,**kargs):
+        """ Main window of teh graphical interface. It's central widget is the
+        `RFigureGui` instance. Contains slots to save, open, close, etc.
+        """
         QtWidgets.QMainWindow.__init__(self,*args,**kargs)
         self.rFigureWidget = RFigureGui(self)
 
@@ -276,8 +275,10 @@ class RFigureMainWindow(QtWidgets.QMainWindow):
         self.actionClose = QtWidgets.QAction("Close",self)
         self.actionFormatName = QtWidgets.QAction("Format",self)
 
+
         self.lineEdit_filepath = QtWidgets.QLineEdit(
-                            self.rFigureWidget.formatName('.'))
+                self.rFigureWidget.formatExt(
+                    self.rFigureWidget.formatName('./untitled')))
         self.button_formatname = QtWidgets.QPushButton("Format Name")
 
         ### Connections
@@ -294,28 +295,19 @@ class RFigureMainWindow(QtWidgets.QMainWindow):
         self.actionOpen.setShortcuts(QtGui.QKeySequence.Open)
         self.actionClose.setShortcuts(QtGui.QKeySequence.Close)
 
-
-
         toolbar = self.addToolBar('')
         toolbar.addAction(self.actionOpen)
         toolbar.addAction(self.actionSave)
         toolbar.addAction(self.actionSaveAs)
         toolbar.addAction(self.actionClose)
 
-
-
-        self.setWindowTitle('RFigureGui 3 : Save matplotlib figure')
+        self.setWindowTitle('RFigureGui %s : Save matplotlib figure'%__version__)
         self.setWindowIcon(QtGui.QIcon(os.path.join(file_dir,'images/logo.png')))
 
-
-        # wid_line = QtWidgets.QWidget()
-        # wid_line.setSizePolicy( QtWidgets.QSizePolicy.Expanding,
-            # QtWidgets.QSizePolicy.Fixed)
         wid_layout = QtWidgets.QHBoxLayout()
         wid_layout.addWidget(QtWidgets.QLabel("File path:"))
         wid_layout.addWidget(self.lineEdit_filepath)
         wid_layout.addWidget(self.button_formatname)
-        # wid_line.setLayout(wid_layout)
 
         main_layout = QtWidgets.QVBoxLayout()
         main_layout.addWidget(self.rFigureWidget)
@@ -327,14 +319,16 @@ class RFigureMainWindow(QtWidgets.QMainWindow):
 
         self.setCentralWidget(centralWidget)
 
-
         self.checkDirpath()
-
-
-
 
     @QtCore.pyqtSlot()
     def slotOpen(self,filepath=None):
+        """Slot to open a figure
+
+        Parameter:
+        - filepath : str
+            The file path to open. If None, ask the user which file to open.
+        """
         self.checkBeforeClose()
         if filepath is None:
             filepath = QtWidgets.QFileDialog().getOpenFileName(self)[0]
@@ -346,6 +340,15 @@ class RFigureMainWindow(QtWidgets.QMainWindow):
 
     @QtCore.pyqtSlot()
     def slotSave(self,filepath=None):
+        """Slot to save the figure
+
+        Parameter:
+        - filepath : str
+            The file path where to save the figure.
+            If None, either take the string in `self.lineEdit_filepath`, or
+            if `self.lineEdit_filepath` is empty, asks the user.
+        """
+
         if filepath is None:
             filepath = str(self.lineEdit_filepath.text()).strip()
             if len(filepath)==0:
@@ -356,6 +359,9 @@ class RFigureMainWindow(QtWidgets.QMainWindow):
 
     @QtCore.pyqtSlot()
     def slotSaveAs(self):
+        """Slot to save the figure by asking the user where to save it.
+        """
+
         filepath = QtWidgets.QFileDialog().getSaveFileName(self)[0]
         if not filepath:
             return False
@@ -373,6 +379,9 @@ class RFigureMainWindow(QtWidgets.QMainWindow):
 
 
     def checkBeforeClose(self):
+        """Checks if the document has been modified before closing. If it has, ask the
+        user if they wants to save it.
+        """
         if self.rFigureWidget.isModified():
             res=QtWidgets.QMessageBox.question(
                     self,
@@ -386,7 +395,7 @@ class RFigureMainWindow(QtWidgets.QMainWindow):
         return QtWidgets.QMessageBox.Yes
 
     def closeEvent(self, event):
-        """Check if we have changed something without saving"""
+        """Checks if we have changed something without saving"""
         res=self.checkBeforeClose()
         if (res == QtWidgets.QMessageBox.Yes) or (res == QtWidgets.QMessageBox.No):
             event.accept()
@@ -394,6 +403,10 @@ class RFigureMainWindow(QtWidgets.QMainWindow):
             event.ignore()
 
     def checkDirpath(self):
+        """Checks if the directory of the filepath in `self.lineEdit_filepath`
+        is an existing directory. If it is, colors `self.lineEdit_filepath` in
+        green otherwise in red.
+        """
         filepath = str(self.lineEdit_filepath.text())
         dirpath,_ = os.path.split(filepath)
         palette = self.lineEdit_filepath.palette()
@@ -426,27 +439,27 @@ class TableVariables(QtWidgets.QTableWidget):
             self.renameItem(self.currentRow ())
 
 
-    def deleteItem(self,row):
-        msg = "Are you sure you want to delete the variable <"+self.item(row,0).text()+">?"
-        res = QtWidgets.QMessageBox.question (self, "Delete variable", msg,QtWidgets.QMessageBox.Yes | QtWidgets.QMessageBox.Cancel)
-        if (res == QtWidgets.QMessageBox.Yes):
-            self.saveFigureGui.dict_variables.pop(str(self.item(row,0).text()))
-            self.updateFromDict()
-
-    def renameItem(self,row):
-        old_k = str(self.item(row,0).text())
-        msg = "How rename the variable <"+self.item(row,0).text()+">?"
-        res = QtWidgets.QInputDialog.getText(self, "Rename variable",msg,text =old_k)
-
-        if res[1] and str(res[0])!='' and res[0]!=old_k:
-            if str(res[0]) in self.saveFigureGui.dict_variables.keys():
-                msg = "The name of the variable <"+str(res[0])+"> is allready used."
-                res = QtWidgets.QMessageBox.critical(self, "Rename variable", msg)
-            else:
-                v = self.saveFigureGui.dict_variables.pop(old_k)
-                self.saveFigureGui.dict_variables[str(res[0])] = v
-                self.updateFromDict()
-
+    # def deleteItem(self,row):
+    #     msg = "Are you sure you want to delete the variable <"+self.item(row,0).text()+">?"
+    #     res = QtWidgets.QMessageBox.question (self, "Delete variable", msg,QtWidgets.QMessageBox.Yes | QtWidgets.QMessageBox.Cancel)
+    #     if (res == QtWidgets.QMessageBox.Yes):
+    #         self.saveFigureGui.dict_variables.pop(str(self.item(row,0).text()))
+    #         self.updateFromDict()
+    #
+    # def renameItem(self,row):
+    #     old_k = str(self.item(row,0).text())
+    #     msg = "How rename the variable <"+self.item(row,0).text()+">?"
+    #     res = QtWidgets.QInputDialog.getText(self, "Rename variable",msg,text =old_k)
+    #
+    #     if res[1] and str(res[0])!='' and res[0]!=old_k:
+    #         if str(res[0]) in self.saveFigureGui.dict_variables.keys():
+    #             msg = "The name of the variable <"+str(res[0])+"> is allready used."
+    #             res = QtWidgets.QMessageBox.critical(self, "Rename variable", msg)
+    #         else:
+    #             v = self.saveFigureGui.dict_variables.pop(old_k)
+    #             self.saveFigureGui.dict_variables[str(res[0])] = v
+    #             self.updateFromDict()
+    #
 
     def updateFromDict(self):
         self.setRowCount(len(self.saveFigureGui.dict_variables))
@@ -480,13 +493,9 @@ def main(argv):
 
     if len(argv)>1:
         f = ' '.join(argv[1:])
-        if f[-len(RFigureCore.ext):]== RFigureCore.ext:
-            sf=RFigureMainWindow()
-            sf.slotOpen(f)
-        elif f[-len(RFigureCore.ext):]== '.rfig2':
-            sf = convert_2_to_3(f,gui=True)
-        else:
-            sf = convert_1_to_3(f,gui=True)
+        sf=RFigureMainWindow()
+        sf.slotOpen(f)
+
         sf.show()
     else:
         sf=RFigureMainWindow()
