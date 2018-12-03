@@ -8,11 +8,16 @@ class RDateDisplay:
     """
     @staticmethod
     def cur_date(date="Today",with_hour=False):
-        """ Will return a string containing the date under the format YYYYMMDD
-        date : in [""Today", "Yesterday, "Tomorrow"] (dft "Today"). we represent
-            which day
-        with_hour : If True return add the hours to the string. The format will
-            then be YYYYMMDDHHMMSS.
+        """ Will return a string containing the date under the format YYYYMMDD.
+
+        Parameters
+        - date : int or str
+            Which day should be refered. If int, refers to the number of day
+            compared to today (negative for the past, positive for the future).
+            If str, should be in [""Today", "Yesterday, "Tomorrow"] (by default
+            "Today").
+        - with_hour : If True return add the hours to the string. The format
+            will then be YYYYMMDDHHMMSS.
         """
         dico={
                 "Today"     : 0  ,

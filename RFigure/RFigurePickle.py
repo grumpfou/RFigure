@@ -95,9 +95,3 @@ def load(filepath):
     except BaseException as e:
         raise e
     return d['objects'],d['commentaries'],d['version']
-
-
-
-if __name__=='__main__':
-    if len(sys.argv)>1:
-        convert_1_to_2(*sys.argv[1:])
