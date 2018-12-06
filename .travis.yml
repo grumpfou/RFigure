@@ -4,6 +4,7 @@ python:
 # command to install dependencies
 install:
   - pip install pyqt5
+  - pip install pytest-ipynb
   - pip install --quiet .
 # command to run tests
 script:
