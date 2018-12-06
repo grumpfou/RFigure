@@ -274,6 +274,7 @@ class RFigureMainWindow(QtWidgets.QMainWindow):
         self.actionSaveAs = QtWidgets.QAction("SaveAs",self)
         self.actionClose = QtWidgets.QAction("Close",self)
         self.actionFormatName = QtWidgets.QAction("Format",self)
+        self.actionAbout= QtWidgets.QAction("About",self)
 
 
         self.lineEdit_filepath = QtWidgets.QLineEdit(
@@ -288,18 +289,21 @@ class RFigureMainWindow(QtWidgets.QMainWindow):
         self.actionClose.triggered.connect(self.close)
         self.lineEdit_filepath.textChanged.connect(self.checkDirpath)
         self.button_formatname.clicked.connect(self.slotFormatName)
+        self.actionAbout.triggered.connect(self.slotAbout)
 
 
         self.actionSave.setShortcuts(QtGui.QKeySequence.Save)
         self.actionSaveAs.setShortcuts(QtGui.QKeySequence.SaveAs)
         self.actionOpen.setShortcuts(QtGui.QKeySequence.Open)
         self.actionClose.setShortcuts(QtGui.QKeySequence.Close)
+        self.actionAbout.setShortcuts(QtGui.QKeySequence.HelpContents)
 
         toolbar = self.addToolBar('')
         toolbar.addAction(self.actionOpen)
         toolbar.addAction(self.actionSave)
         toolbar.addAction(self.actionSaveAs)
         toolbar.addAction(self.actionClose)
+        toolbar.addAction(self.actionAbout)
 
         self.setWindowTitle('RFigureGui %s : Save matplotlib figure'%__version__)
         self.setWindowIcon(QtGui.QIcon(os.path.join(file_dir,'images/logo.png')))
@@ -376,6 +380,27 @@ class RFigureMainWindow(QtWidgets.QMainWindow):
         filepath = self.rFigureWidget.formatExt(filepath)
         filepath = self.rFigureWidget.formatName(filepath)
         self.lineEdit_filepath.setText(filepath)
+
+    @QtCore.pyqtSlot()
+    def slotAbout(self):
+        text = (
+          "<p>RFigure is a software dedicated to the edition of figures using "
+          "Python and Matplotlib. I is mainly written by Renaud Dessalles "
+          "(Grumpfou) and distributed under the licence GNU General Public "
+          "License v3.0 (unless some part of the code when specified otherwise, "
+          "written by somebody else)</p>\n\n"
+
+          "<p>Sources, bug reporting, help are available on "
+          "<a href=\"http://github.com/grumpfou/RFigure\">http://github.com/grumpfou/RFigure</a>.</p>"
+          "<p>The logo is under Creative Commons Zero 1.0 Public Domain "
+          "License and available "
+          "<a href=\"https://openclipart.org/detail/172389/graph\">here.</p>"
+            )
+        msgBox = QtWidgets.QMessageBox()
+        # QtCore.Qt.convertFromPlainText(text)
+        msgBox.setTextFormat(QtCore.Qt.RichText)
+        # tect =  QtCore.Qt.convertFromPlainText(text)
+        msgBox.about(self, "About RFigure",text)
 
 
     def checkBeforeClose(self):

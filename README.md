@@ -18,22 +18,18 @@ written in Python 3.6.6.
 In a terminal, go in the same folder in which the sources have been installed, and use the following command lines:
 
 ```
-pip install pyqt5
 pip install .
 ```
-You need to install PyQt5 independently because it can not be directly be
-installed using setuptools of Python. (cf <https://stackoverflow.com/questions/4628519/is-it-possible-to-require-pyqt-from-setuptools-setup-py>).
 
 Alternately, you can explicitly save in you user directories using:
 ```
-pip install --user pyqt5
 pip install --user .
 ```
 
 ***Note:*** It is possible that by using the ```--user``` option, the script
-**rfig** is not saved in a directory which is in the path. In that case,
-be sure to add the directory that contains **rfig** (usually ~/.local/bin/) to
-the path manually (see <https://askubuntu.com/questions/799302/ubuntu-cant-find-an-executable-file-in-local-bin>)
+**rfig** is not saved in a directory which is in the environment variable "PATH". In that case, be sure to add the directory that contains **rfig** (usually
+~/.local/bin/) to the path manually (see
+<https://askubuntu.com/questions/799302/ubuntu-cant-find-an-executable-file-in-local-bin>)
 
 
 ## Usages
@@ -77,29 +73,33 @@ specify the name of the file and it will create a RFigure according by taking
 the instructions of the cell as in the follow example:
 ```
 In[1]:
-> a = np.arange(0,10,.1)
-> b = np.cos(a)
+> X = np.arange(0,10,.1)
+> Y = np.cos(a)
 
 In[2]:
 > %%rfig_save "Test"
 > # search the variables in the instructions, no comment and save in pdf
-> plt.plot(a,b)
+> plt.plot(X,Y)
 ```
-The magic function tries to  automatically detect what local variables need to be save (in the example, `a`  and `b`).
+The magic function tries to  automatically detect what local variables need to be save (in the example, `X`  and `Y`).
 
 ## How the code is organized
 
-- RFigure3: contains the main two classes (RFigureCore and RFigureGui) used to
-handle rfig3 files. RFigureCore is a direct tool used in the scripts to create
-the files. RFigureGui is a gui interface used to modify a posteriori the
+- RFigureCore is a direct tool used in the scripts to create
+the files.
+- RFigureGui is a gui interface used to modify a posteriori the
 instructions
 - RFigureConfig: contains the header that will be execute before any
 instructions. It typically import numpy and matplotlib as the magic function
 %pyplot does in Jupyter/IPython
-- RPickle2: handels the coding and decoding of information contained in rfig3
+- RFigurePickle: handles the coding and decoding of information contained in rfig3
 files. Works in the same way as the regular pickle library of python
 - REditors: contains the Syntax Highlighters used to display the python code
 (for the instructions) and the markdown code (for the commentaries).
+- RFigureMagics: contrains the magic functions tah can be  used in
+Jupyter/QtConsole
+- RFigureMisc: diverse functions
+
 
 ## Miscelaneous
 - By default, numpy and pyplot are already imported when launching when
