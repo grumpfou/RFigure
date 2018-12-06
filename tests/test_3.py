@@ -1,12 +1,13 @@
-import RFigure.RFigureGui
 import numpy
 import os
+
+from pytest import mark
 
 dir,_ = os.path.split(__file__)
 filepath_testfile=os.path.join(dir,'./Test.rfig3')
 
 
-
+@mark.qt
 def test1():
     """
     make sure an existing figure can be openned
