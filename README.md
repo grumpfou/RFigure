@@ -1,5 +1,9 @@
 # RFigure version 3
 
+[![GPL Licence](https://badges.frapsoft.com/os/gpl/gpl.svg?v=103)](https://opensource.org/licenses/GPL-3.0/)
+<img src="https://img.shields.io/badge/Python-_3-brightgreen.svg">
+
+
 ## Forewords
 
 RFigure is a program that deals save in a specific file (whose extension is
@@ -40,7 +44,7 @@ Open Python terminal and try:
 import RFigure,numpy
 X = numpy.arange(0,10,0.1)
 Y = numpy.cos(X)
-i = "plot(X,Y)" # the instrucutions
+i = "plot(X,Y)" # the instructions
 d = dict(X=X,Y=Y) # the data to display
 c = "This is a test" # the commentaries associate with the figures
 rf = RFigure.RFigureCore(d=d,i=i,c=c)
@@ -108,17 +112,17 @@ Jupyter/IPython)
 - Local Header: When the program detect a file with the name
 .RFigureHeaderLocal.py in the same dir as the file, it adds it to the header
 (can be used to specify the font for all the rfig3 of the directory for instance).
-- Format name: when set to true when save (or push the button in the gui
-  interface), it will format the name of the figure as Figure_YYYYMMDD_foo.rfig3
-  (where YYYYMMDD stands for the current date).
+- Format name: the RFigureCore method `formatName` (or push the button in the gui
+interface) will format the name of the figure as Figure_YYYYMMDD_foo.rfig3
+(where YYYYMMDD stands for the current date).
 - Shortcurts in the graphical interface:
-    - Ctrl+S will save the file;
-    - Ctrl+M or Ctrl+Enter will show the figure.
-    - Ctrl+/ will comment/uncomment the block
-    - Ctrl+↑ will move line(s) up
-    - Ctrl+↓ will move line(s) down
-    - Ctrl+Shift+D will duplicate the line(s)
-    - Ctrl+Shift+K will delete the line(s)
+    - `Ctrl+S` will save the file;
+    - `Ctrl+M` or `Ctrl+Enter` will show the figure.
+    - `Ctrl+/` will comment/uncomment the block
+    - `Ctrl+↑` will move line(s) up
+    - `Ctrl+↓` will move line(s) down
+    - `Ctrl+Shift+D` will duplicate the line(s)
+    - `Ctrl+Shift+K` will delete the line(s)
 - SF_INSTRUCTIONS command: (deprecated, use the magic function `%%rfig_save` instead) when the instructions in input contained at some
 point the line
 > \#! SF_INSTRUCTIONS

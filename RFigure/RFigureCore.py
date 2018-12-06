@@ -318,21 +318,21 @@ class RFigureCore:
 
     def formatName(self,filepath=None):
         """
-        Format the filename under the format:
-                "path/Figure_YYYYMMDD_foo.rfig3"
+        Format the filename under the format: "path/Figure_YYYYMMDD_foo.rfig3"
         where foo is the current filename. If the filpath is already under this
-        foramt, do not change it. It updates the attribute `self.filepath`.
+        format, do not change it. It updates the attribute `self.filepath`.
 
         filepath : str
-            the filepath to format.
+            the filepath to format, by default takes `self.filename`
 
-        Example (with each time, YYYYMMDD corresponding to the curent date):
+        Example (with each time, 20181201 corresponding to the curent date):
+        -------
         > rf = RFigureCore(filpath='./foo/faa.rfig3')
-        > print(rf.formatName()) # with the YYYYMMDD corresp. to the curent date
+        > rf.formatName()
         "./foo/Figure_20181201_faa.rfig3"
-        > print(rf.formatName(filepath='./foo/fii'))
+        > rf.formatName(filepath='./foo/fii.rfig3')
         "./foo/Figure_20181201_fii.rfig3"
-        > print(rf.formatName(filepath='./foo/Figure_20181201_fuu.rfig3'))
+        > rf.formatName(filepath='./foo/Figure_20181201_fuu.rfig3')
         "./foo/Figure_20181201_fuu.rfig3"
         """
         if filepath is None:
