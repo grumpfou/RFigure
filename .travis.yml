@@ -3,8 +3,8 @@ python:
   - "3.6"
 # command to install dependencies
 install:
-  - pip install --quiet -r requirements.txt
+  - pip install pyqt5
   - pip install --quiet .
 # command to run tests
 script:
-  - py.test
+  - py.test --no-qt
