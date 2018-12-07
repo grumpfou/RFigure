@@ -54,6 +54,18 @@ def yieldBlockInSelection_WW(self,direction=1):
 QtGui.QTextCursor.yieldBlockInSelection=yieldBlockInSelection_WW
 
 
+class RLineNumberArea(QtWidgets.QWidget):
+    def __init__(self, editor):
+        QtWidgets.QWidget.__init__(self,editor)
+        self.codeEditor = editor
+
+    def sizeHint(self):
+        return QtCore.QSize(self.codeEditor.lineNumberAreaWidth(), 0)
+
+    def paintEvent(self, event):
+        self.codeEditor.lineNumberAreaPaintEvent(event)
+
+
 
 class RPythonEditor(QtWidgets.QPlainTextEdit):
     delimiters = {
@@ -81,7 +93,11 @@ class RPythonEditor(QtWidgets.QPlainTextEdit):
         # no wrap
         self.setLineWrapMode(QtWidgets.QPlainTextEdit.NoWrap)
 
+        self.lineNumberArea = RLineNumberArea(self)
+
         self.setup_connections()
+
+        self.updateLineNumberAreaWidth(0)
     def setup_connections(self):
         # actions
         self.actionCommentDecomment    = QtWidgets.QAction("Comment/Decomment",self)
@@ -108,6 +124,10 @@ class RPythonEditor(QtWidgets.QPlainTextEdit):
         self.actionDuplicateLine    .triggered.connect(self.SLOT_actionDuplicateLine)
         self.actionMoveLineUp        .triggered.connect(self.SLOT_actionMoveLineUp)
         self.actionMoveLineDown        .triggered.connect(self.SLOT_actionMoveLineDown)
+
+        self.blockCountChanged.connect(self.updateLineNumberAreaWidth)
+        self.updateRequest.connect(self.updateLineNumberArea)
+
 
     def keyPressEvent(self,e):
         cur = self.textCursor()
@@ -288,6 +308,56 @@ class RPythonEditor(QtWidgets.QPlainTextEdit):
             cursor.movePosition(QtGui.QTextCursor.Left,QtGui.QTextCursor.MoveAnchor,len(self.delimiters[delim_key][1]))
 
         return cursor
+
+
+    def lineNumberAreaWidth(self):
+        digits = 1
+        max_value = max(1, self.blockCount())
+        while max_value >= 10:
+            max_value /= 10
+            digits += 1
+        space = 3 + self.fontMetrics().width('9') * digits
+        return space
+
+    def updateLineNumberAreaWidth(self, _):
+        self.setViewportMargins(self.lineNumberAreaWidth(), 0, 0, 0)
+
+    def updateLineNumberArea(self, rect, dy):
+        if dy:
+            self.lineNumberArea.scroll(0, dy)
+        else:
+            self.lineNumberArea.update(0, rect.y(), self.lineNumberArea.width(), rect.height())
+        if rect.contains(self.viewport().rect()):
+            self.updateLineNumberAreaWidth(0)
+
+    def resizeEvent(self, event):
+        QtWidgets.QPlainTextEdit.resizeEvent(self,event)
+        cr = self.contentsRect()
+        self.lineNumberArea.setGeometry(QtCore.QRect(cr.left(), cr.top(), self.lineNumberAreaWidth(), cr.height()))
+
+
+    def lineNumberAreaPaintEvent(self, event):
+        painter = QtGui.QPainter(self.lineNumberArea)
+
+        painter.fillRect(event.rect(), QtCore.Qt.lightGray)
+
+        block = self.firstVisibleBlock()
+        blockNumber = block.blockNumber()
+        top = self.blockBoundingGeometry(block).translated(self.contentOffset()).top()
+        bottom = top + self.blockBoundingRect(block).height()
+
+        # Just to make sure I use the right font
+        height = self.fontMetrics().height()
+        while block.isValid() and (top <= event.rect().bottom()):
+            if block.isVisible() and (bottom >= event.rect().top()):
+                number = str(blockNumber + 1)
+                painter.setPen(QtCore.Qt.black)
+                painter.drawText(0, top, self.lineNumberArea.width(), height, QtCore.Qt.AlignRight, number)
+
+            block = block.next()
+            top = bottom
+            bottom = top + self.blockBoundingRect(block).height()
+            blockNumber += 1
 
 
 class RMarkdownEditor(QtWidgets.QTextEdit):
