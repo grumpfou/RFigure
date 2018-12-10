@@ -124,7 +124,6 @@ class RFigureGui(RFigureCore,QtWidgets.QWidget):
         The saving function called by the `Save` button.
         Ask for confirmation and automotically save the image (png,pdf or eps)
         at the same time.
-
         - filepath : str
             the file where to save the figure (by default, take the
             `self.filepath` attribute)
@@ -184,15 +183,16 @@ class RFigureGui(RFigureCore,QtWidgets.QWidget):
         """
         self.instructions=str(self.editor_python.toPlainText())
 
-        try:
-            print("============ RUN ============")
-            RFigureCore.show(self)
-        except BaseException as e :
-
-            mess = str(e)
-            raise e
-        finally:
-            print("============ END ============")
+        print("============ RUN ============")
+        RFigureCore.show(self,print_errors=True)
+        print("============ END ============")
+        # try:
+        # except BaseException as e :
+        #
+        #     mess = str(e)
+        #     raise e
+        # finally:
+        #     print("============ END ============")
 
     def closeAll(self):
         """
@@ -252,7 +252,6 @@ class RFigureGui(RFigureCore,QtWidgets.QWidget):
     def isModified(self):
         """ Determine if the figure instructions or commentaries have been
         modified.
-
         Returns
         - state : bool
             True if the instructions or commentaries have been modified since
@@ -328,7 +327,6 @@ class RFigureMainWindow(QtWidgets.QMainWindow):
     @QtCore.pyqtSlot()
     def slotOpen(self,filepath=None):
         """Slot to open a figure
-
         Parameter:
         - filepath : str
             The file path to open. If None, ask the user which file to open.
@@ -345,7 +343,6 @@ class RFigureMainWindow(QtWidgets.QMainWindow):
     @QtCore.pyqtSlot()
     def slotSave(self,filepath=None):
         """Slot to save the figure
-
         Parameter:
         - filepath : str
             The file path where to save the figure.

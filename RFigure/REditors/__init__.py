@@ -168,6 +168,7 @@ class RPythonEditor(QtWidgets.QPlainTextEdit):
         cursor=self.textCursor()
         cursor.insertText(text)
 
+    @QtCore.pyqtSlot()
     def SLOT_actionCommentDecomment(self):
         cur1 = self.textCursor()
         cur1.beginEditBlock()

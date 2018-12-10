@@ -84,9 +84,13 @@ class RFigureCore:
 
 
 
-    def execute(self):
+    def execute(self,print_errors=False):
         """
         The method executes the instructions (no `show` at the end).
+
+        - print_errors : bool
+            if True will print the errors rather than raise them (to avoid
+            some troubles with PyQt5)
         """
         if self.filepath!=None:
             dirpath,_ = os.path.split(self.filepath)
@@ -125,13 +129,16 @@ class RFigureCore:
                 mess += 'File "'+fname+'", line '+str(lineno)+', in '+fn+\
                     '\n\t'+text+'\n'
             mess+= e.__class__.__name__ +':'+str(e)
-            raise type(e)(mess)
+            if print_errors:
+                print(mess)
+            else:
+                raise type(e)(mess)
 
-    def show(self):
+    def show(self,print_errors=False):
         """ Method that execute the code instructions and adds the
         matplotlib.pyplot.show() statement at the end.
         """
-        self.execute()
+        self.execute(print_errors=print_errors)
         matplotlib.pyplot.show()
 
 
