@@ -274,6 +274,7 @@ class RFigureCore:
         """
         sfig=cls()
         sfig.open(filepath)
+        return sfig
 
     @staticmethod
     def update(fig_path,d=None,i=None,c=None,mode='append',fig_type=False):

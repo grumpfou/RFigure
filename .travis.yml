@@ -5,6 +5,7 @@ python:
 install:
   - pip install pyqt5
   - pip install pytest-ipynb
+  - pip install pandas
   - pip install --quiet .
 # command to run tests
 script:

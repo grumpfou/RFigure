@@ -1,10 +1,24 @@
                                                                                                                                                                                                                                                                     # unicode in np.ndarray
 from __future__ import absolute_import, division, print_function,unicode_literals
-import numpy as np
 import os,gzip
 import subprocess
+# import numpy as np
 
-__version__ = "2"
+__version__ = "2.1"
+
+import sys
+try:
+    import numpy
+    has_numpy = True
+except ImportError:
+    has_numpy = False
+
+try:
+    import pandas
+    has_pandas = True
+except ImportError:
+    has_pandas = False
+
 
 import sys
 strings_types = [str]
@@ -22,6 +36,14 @@ file_dir = os.path.realpath(os.path.dirname(__file__))
 path_to_header = os.path.join(file_dir,path_to_header)
 ########################################################################
 
+authorized_types = [int,list,bool,dict,float,str]
+if has_numpy:
+    authorized_types += [numpy.ndarray,numpy.dtype]
+    authorized_types += [numpy.int8,numpy.int16,numpy.int32,numpy.int64]
+    authorized_types += [numpy.float16,numpy.float32,numpy.float64]
+
+if has_pandas:
+    authorized_types.append(pandas.core.frame.DataFrame)
 
 def save(objects,filepath,commentaries="",version=None,ext='rpk2'):
     """
@@ -36,31 +58,41 @@ def save(objects,filepath,commentaries="",version=None,ext='rpk2'):
     path,e = os.path.splitext(filepath)
     if len(e)==0:
         filepath+='.'+ext
-    to_save = object_to_txt([objects,commentaries,version])
+    imports = []
+    to_save = object_to_txt([objects,commentaries,version],imports)
+    to_save = '\n'.join(["import %s"%s for s in imports])+'\n'+to_save
 
     fid = gzip.GzipFile(filepath,'wb')
+
     try :
         fid.write(to_save.encode('utf-8'))
         print ("Pickle success")
     finally :
         fid.close()
 
-def object_to_txt(objects):
+def object_to_txt(objects,imports):
+    if type(objects) not in authorized_types:
+        raise ValueError("The type "+str(type(objects))+" can not be save "+
+            "using this pickle")
     res= u""
     if type(objects)==dict:
-        res += "{"+",".join([object_to_txt(k)+":"+object_to_txt(v) for k,v in objects.items()]) + "}"
+        res += "{"+",".join([object_to_txt(k,imports)+":"+object_to_txt(v,imports) for k,v in objects.items()]) + "}"
 
     elif type(objects)==tuple:
-        res += "("+",".join([object_to_txt(o) for o in objects]) + ")"
+        res += "("+",".join([object_to_txt(o,imports) for o in objects]) + ")"
     elif type(objects)==list:
-        res += "["+",".join([object_to_txt(o) for o in objects]) + "]"
-    elif type(objects)==np.ndarray:
-        res += "numpy.array("+object_to_txt(list(objects))+',dtype='+object_to_txt(objects.dtype)+')'
+        res += "["+",".join([object_to_txt(o,imports) for o in objects]) + "]"
+    elif has_numpy and type(objects)==numpy.ndarray:
+        res += "numpy.array("+object_to_txt(list(objects),imports)+\
+                    ',dtype=numpy.'+object_to_txt(objects.dtype,imports)+')'
+        imports.append("numpy")
 
-
-    # elif type(objects)==unicode:
-    #     res += repr(objects)
-
+    elif has_pandas and type(objects)==pandas.core.frame.DataFrame:
+        res += "pandas.DataFrame("+object_to_txt(objects.values,imports)+\
+                    ",index = "+object_to_txt(list(objects.index),imports)+\
+                    ",columns = "+object_to_txt(list(objects.columns),imports)+\
+                    ")"
+        imports.append("pandas")
     else:
         res += repr(objects)
     return res
@@ -87,7 +119,9 @@ def load(filepath):
     finally:
         fid.close()
 
-    instructions += '\n'+'objects,commentaries,version = '+reads.decode('utf-8')
+    reads = reads.decode('utf-8').split('\n')
+    instructions += '\n'+'\n'.join(reads[:-1])+"\n"+\
+            'objects,commentaries,version = '+reads[-1]
     try:
         d=dict()
         exec(instructions,d)

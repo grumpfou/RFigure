@@ -133,7 +133,7 @@ when using it with a Jupyter notebook:
 In[]:
 > X = numpy.arange(0,10,0.1)
 > d=dict(X=X)
-> rf = RFigure3.RFIgureCore(i=In[-1],d=d)
+> rf = RFigure3.RFigureCore(i=In[-1],d=d)
 > rf.save(filepath='./Test.rfig3')
 > #! SF_INSTRUCTIONS
 > X=arange(0,10,0.1)
