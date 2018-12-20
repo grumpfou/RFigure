@@ -73,7 +73,7 @@ def save(objects,filepath,commentaries="",version=None,ext='rpk2'):
 def object_to_txt(objects,imports):
     if type(objects) not in authorized_types:
         raise ValueError("The type "+str(type(objects))+" can not be save "+
-            "using this pickle")
+            "using this pickle, only the ones in this list: "+str(authorized_types))
     res= u""
     if type(objects)==dict:
         res += "{"+",".join([object_to_txt(k,imports)+":"+object_to_txt(v,imports) for k,v in objects.items()]) + "}"
