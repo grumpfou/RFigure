@@ -14,8 +14,8 @@ instructions executed to display.
 This code is written by R. Dessalles (Grumpfou) for the most part (the only
 exceptions are the code in REditors that are adapted from example on the web).
 It is proposed under the license GNU General Public License v3.0 (unless some
-part of the code when specified otherwise,written by somebody else). It is
-written in Python 3.6.6.
+part of the code when specified otherwise like REditors, when written by
+somebody else). It is written in Python 3.6.6.
 
 ## Install
 
@@ -31,8 +31,9 @@ pip install --user .
 ```
 
 ***Note:*** It is possible that by using the ```--user``` option, the script
-**rfig** is not saved in a directory which is in the environment variable "PATH". In that case, be sure to add the directory that contains **rfig** (usually
-~/.local/bin/) to the path manually (see
+**rfig** is not saved in a directory which is in the environment variable
+"PATH". In that case, be sure to add the directory that contains **rfig**
+(usually ~/.local/bin/) to "PATH" manually (see
 <https://askubuntu.com/questions/799302/ubuntu-cant-find-an-executable-file-in-local-bin>)
 
 
@@ -52,9 +53,9 @@ rf.show() # execute the instructions to be sure it works
 rf.save(filepath='./Test.rfig3') # only save the rfig3 file
 rf.save(filepath='./Test.rfig3',fig_type='pdf') # save the rfig3 file as well as the pdf associated
 ```
-Note that the data contained in `d` should be either `int`,`float`,`np.ndarray`,
-`str`,`bool` or data collections (`list`, `tuple` or `dict`) that contains
-supported types.
+Note that the data contained in `d` should be either `int`,`float`,
+`str`,`bool`,`numpy.ndarray`, `pandas.DataFrame` or data collections (`list`,
+`tuple` or `dict`) that contains supported types.
 
 ### Example with graphical application
 Once a rfig3 file is saved, one can use the graphical interface to modify the
@@ -66,7 +67,7 @@ In which case you have the following interface:
 
 ### Example using a magic function in Jupyter notebooks (IPython)
 A Jupyter magic function exists to automatically save figures from Jupyter
-notebooks. It is available in the RFigure.RFigureMagics script.
+notebooks. It is available in the RFigure.RFigureMagics module.
 
 To import the magic in the Jupyter notebook, use:
 ```
@@ -85,7 +86,8 @@ In[2]:
 > # search the variables in the instructions, no comment and save in pdf
 > plt.plot(X,Y)
 ```
-The magic function tries to  automatically detect what local variables need to be save (in the example, `X`  and `Y`).
+The magic function tries to  automatically detect what local variables need to
+be save (in the example, `X`  and `Y`).
 
 ## How the code is organized
 
@@ -100,20 +102,20 @@ instructions. It typically import numpy and matplotlib as the magic function
 files. Works in the same way as the regular pickle library of python
 - REditors: contains the Syntax Highlighters used to display the python code
 (for the instructions) and the markdown code (for the commentaries).
-- RFigureMagics: contrains the magic functions tah can be  used in
-Jupyter/QtConsole
-- RFigureMisc: diverse functions
+- RFigureMagics: contains the magic functions that can be used in
+Jupyter/QtConsole.
+- RFigureMisc: various functions
 
 
 ## Miscelaneous
-- By default, numpy and pyplot are already imported when launching when
-executing the instructions (similar to the magic function %pyplot does in
-Jupyter/IPython)
-- Local Header: When the program detect a file with the name
-.RFigureHeaderLocal.py in the same dir as the file, it adds it to the header
-(can be used to specify the font for all the rfig3 of the directory for instance).
-- Format name: the RFigureCore method `formatName` (or push the button in the gui
-interface) will format the name of the figure as Figure_YYYYMMDD_foo.rfig3
+- By default, numpy and pyplot are already imported when executing the
+instructions (similar to the magic function %pyplot does in Jupyter/IPython)
+- Local Header: When the program detects a file with the name
+`.RFigureHeaderLocal.py` in the same directory as the file, it adds it to the
+header (can be used to specify the font for all the rfig3 of the directory for
+instance).
+- Format name: the RFigureCore method `formatName` (or push the button in the
+gui interface) will format the name of the figure as Figure_YYYYMMDD_foo.rfig3
 (where YYYYMMDD stands for the current date).
 - Shortcurts in the graphical interface:
     - `Ctrl+S` will save the file;

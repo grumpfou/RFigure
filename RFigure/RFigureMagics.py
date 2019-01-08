@@ -1,9 +1,15 @@
 from . import RFigureCore
-import os,re,sys
+import os,re,sys,argparse,shlex,textwrap
 import numpy as np
 from IPython.core.magic import  (Magics, magics_class, line_magic,
                                 cell_magic, line_cell_magic)
 def find_list_variables(instructions,locals_):
+
+    # Remove commentaries
+    # NOTE: will also remove something like a="# this is not a comment" # this is a comment
+    lines = [line.split('#')[0] for line in instructions.split("\n")]
+    instructions = '\n'.join(lines)
+
     vars_ = re.findall(r'\b[a-zA-Z_][a-zA-Z0-9_]*\b',instructions)
     vars_ = list(set(vars_))
     vars_ = [a for a in vars_ if a in locals_]
@@ -29,109 +35,136 @@ def find_vars_dict(cell):
     d = {k:ipy_locals[k] for k in vars_}
     return d
 
+
+
+class MyArgumentParser(argparse.ArgumentParser):
+    class ArgumentParserError(Exception): pass
+    def error(self, message):
+        raise self.ArgumentParserError(message)
+    def exit(self, status=0, message=None):
+        if message:
+            self._print_message(message, _sys.stderr)
+
+
 @magics_class
 class RFigureMagics(Magics):
+    epilog = """
+                Examples (in IPython/Jupyter):
+
+                In[1]:
+                > import numpy as np
+                > a = np.arange(0,10,.1)
+                > b = np.cos(a)
+                > comment = "A comment"
+                > diction = {'a':a,'b':1/a}
+
+                In[2]:
+                > %%rfig_save Test
+                > # search the variables in the instructions, no comment and save in pdf
+                > plt.plot(a,b)
+
+                In[3]:
+                > %%rfig_save -c comment Test
+                > # search the variables in the instructions, with a comment and save in pdf
+                > plt.plot(a,b)
+
+                In[4]:
+                > %%rfig_save --fig_type png
+                > # search the variables in the instructions, no comment and save in png
+                > plt.plot(a,b)
+
+                In[5]:
+                > %%rfig_save -d diction Test
+                > # specify other variables, no comment, save in pdf
+                > plt.plot(a,b)
+
+                In[5]:
+                > %%rfig_save --format_name Test
+                > # search the variables in the instructions, format the filename
+                > plt.plot(a,b)
+                """
+
+    parser_save = MyArgumentParser(
+        prog='%%rfig_save',
+        description = ("Will save a RFigure, whose instructions are the "
+                            "code written in the remaining of the cell."),
+        add_help=False,epilog=textwrap.dedent(epilog),
+        formatter_class=argparse.RawDescriptionHelpFormatter)
+
+    parser_save.add_argument("--help","-h",
+        help="show this help message and exit",
+        action="store_true")
+
+    parser_save.add_argument("--format_name","-fn",
+        help=("Format the name of the file as Figure_YYYYMMDD_foo where "
+              "YYYYMMDD stands for the date. `foo` will be the file names. "
+              "If the file name is already under this format, do notiong."),
+      action="store_true")
+
+    parser_save.add_argument("-d",
+        help="Dictionary of the locals in the rfigure file. If not "
+             "specified, guess from the instructions.",
+        nargs=1)
+
+    parser_save.add_argument("-c",
+        help="Comments associated to the file",
+        nargs=1)
+
+    parser_save.add_argument("--fig_type",'-ft',
+        help="extension of the figure, should be in "+str(RFigureCore.fig_type_list),
+        nargs=1)
+
+    parser_save.add_argument("filepath",
+        help="Path of the file.",
+        nargs='?')
+
     @cell_magic
-    def rfig_save(self,line, cell):
-        """ Will save a RFigure, whose instructions are the the code written in the
-        remaining of the cell.
+    def rfig_save(self,line,cell):
+        args = self.parser_save.parse_args(shlex.split(line))
+        if args.help:
+            self.parser_save.print_help()
+            return True
+        if args.filepath is None:
+            self.parser_save.error("the following arguments are required: file")
+        if args.d is None:
+            args.d = find_vars_dict(cell)
+            print("We determined the RFigure variables to be: `"+"`, `".join(args.d.keys())+"`")
+        else:
+            args.d = eval(args.d[0],find_ipython_locals())
+        if args.c is None:
+            args.c =[]
+        else:
+            args.c = eval(args.c[0],find_ipython_locals())
+        if args.fig_type is None:
+            args.fig_type = 'pdf'
+        elif args.fig_type=='None':
+            args.fig_type = None
+        else:
+            args.fig_type = args.fig_type[0]
 
-        Usage:
-        In[]:
-        > %%rfig filepath [, dict_variables [, comments [, fig_type]]]
-        > # RFigure instructions (code to create the file)
+        rf = RFigureCore(d=args.d,i=cell,c=args.c,filepath=args.filepath)
+        if args.format_name:
+            rf.formatName()
+        rf.save(fig_type=args.fig_type)
+    rfig_save.__doc__ = parser_save.format_help()
 
-        Parameters:
-        - filepath: str
-            the path of the file
-        - dict_variables: dict or None
-            the dictionary that contain the variables of teh RFigure. If not
-            specified or None, will guess them from the the instructions.
-        - comments: st
-            the commentraries of teh RFigure, by default, empty string
-        - fig_type: str in RFigure.RFigureCore.fig_type_list
-            the extention of the figure (if nothing ot None, it takes the "pdf" by
-            default)
 
-        The rest of the cell will represent the instructions to save in the RFigure.
-
-        Examples (in IPython/Jupyter):
-
-        In[1]:
-        > import numpy as np
-        > a = np.arange(0,10,.1)
-        > b = np.cos(a)
-
-        In[2]:
-        > %%rfig_save "Test"
-        > # search the variables in the instructions, no comment and save in pdf
-        > plt.plot(a,b)
-
-        In[3]:
-        > %%rfig_save "Test",None,"This is a comment"
-        > # search the variables in the instructions, with a comment and save in pdf
-        > plt.plot(a,b)
-
-        In[4]:
-        > %%rfig_save "Test",None,None, 'png'
-        > # search the variables in the instructions, no comment and save in png
-        > plt.plot(a,b)
-
-        In[5]:
-        > %%rfig_save "Test",{"a":np.arange(-1,1,.1),"b":1/np.arange(-1,1,.1)}
-        > # specify other variables, no coment, save in pdf
-        > plt.plot(a,b)
+    @line_magic
+    def rfig_load(self,line):
+        """ Magic function to open an existing rfigure and import the
+        instructions and update the locals with the rfigure variables.
         """
+        raise NotImplementedError("Still in devellopement")
+        line = line.strip()
+
+        rf = RFigureCore.load(line)
+
+        raw_code = rf.instructions
+        self.shell.run_cell("%pylab ")
+        find_ipython_locals().update(rf.dict_variables)
+        self.shell.set_next_input('{}'.format(raw_code))
 
 
-        if line.strip()=="":
-            raise ValueError('Specify the RFigure file name.')
-        line = eval(line,find_ipython_locals())
-        if not type(line)==tuple or type(line)==list:
-            line = (line,)
-
-        # 1st element: filepath
-        if len(line)<1 or (line[0] is None):
-            raise ValueError('Specify the RFigure file name.')
-        else:
-            filepath = line[0]
-            if type(filepath)!= str:
-                raise TypeError("The name of the file should be a string")
-            if os.path.splitext(filepath)[1]=='':
-                filepath+='.rfig3'
-
-        # 2nd element: RFigure variable dictionary
-        if len(line)<2 or (line[1] is None):
-             # We search in sys._getframe the one corresponding to the ipython instance
-
-            d = find_vars_dict(cell)
-            print("We determined the RFigure variables to be: `"+"`, `".join(d.keys())+"`")
-
-        else:
-            d = line[1]
-            if type(d)!= dict:
-                raise TypeError("The RFigure variables should be either None or a dictionary")
-
-        # 3rd element: the commentaries
-        if len(line)<3 or (line[2] is None):
-            c = ""
-        else:
-            c = line[2]
-            if type(c)!= str:
-                raise TypeError("The RFigure comments should be a string")
-
-        # 4th element: the fig_type
-        if len(line)<4 or (line[3] is None):
-            fig_type = "pdf"
-        else:
-            fig_type = line[3]
-            if type(fig_type)!= str or (fig_type not in RFigure.RFigureCore.fig_type_list):
-                raise TypeError("The RFigure fig_type should be in "+
-                                        str(RFigure.RFigureCore.fig_type_list))
-
-
-        rf = RFigureCore(d=d,i=cell,c=c)
-        rf.save(filepath=str(filepath),fig_type=fig_type)
 
 def load_ipython_extension(ipython):
     ipython.register_magics(RFigureMagics)
