@@ -36,7 +36,7 @@ file_dir = os.path.realpath(os.path.dirname(__file__))
 path_to_header = os.path.join(file_dir,path_to_header)
 ########################################################################
 
-authorized_types = [int,list,bool,dict,float,str]
+authorized_types = [int,list,bool,dict,float,str,tuple]
 if has_numpy:
     authorized_types += [numpy.ndarray,numpy.dtype]
     authorized_types += [numpy.int8,numpy.int16,numpy.int32,numpy.int64]
