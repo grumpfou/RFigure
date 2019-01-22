@@ -449,8 +449,8 @@ class TableVariables(QtWidgets.QTableWidget):
 
     def __init__(self,saveFigureGui,list_var=None):
         if list_var==None: list_var=[]
-        QtWidgets.QTableWidget.__init__ (self, len(list_var), 2)
-        self.setHorizontalHeaderLabels(["Name","Type"])
+        QtWidgets.QTableWidget.__init__ (self, len(list_var), 3)
+        self.setHorizontalHeaderLabels(["Name","Type","Size"])
         self.saveFigureGui=saveFigureGui
         # self.connect(SIGNAL(returnPressed()),ui->homeLoginButton,SIGNAL(clicked()))
 
@@ -491,6 +491,14 @@ class TableVariables(QtWidgets.QTableWidget):
         for i,(k,v) in enumerate(items):
             self.setItem(i,0,QtWidgets.QTableWidgetItem(k))
             self.setItem(i,1,QtWidgets.QTableWidgetItem(str(type(v))))
+
+            try:
+                len_ = len(v)
+            except TypeError:
+                len_ = 1
+            if len_>1000:
+                len_ = "%.0e"%len_
+            self.setItem(i,2,QtWidgets.QTableWidgetItem(str(len_)))
 
 class EmittingStream(QtCore.QObject):
 
