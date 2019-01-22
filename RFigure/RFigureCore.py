@@ -82,7 +82,10 @@ class RFigureCore:
 
         self.filepath = filepath
 
-
+        assert type(self.instructions) is str
+        assert type(self.commentaries) is str
+        assert type(self.dict_variables) is dict
+        assert type(self.file_split) is str
 
     def execute(self,print_errors=False):
         """
@@ -255,7 +258,7 @@ class RFigureCore:
             value
         """
         if not os.path.exists(filepath):
-            fig_path += self.ext
+            filepath += self.ext
             assert os.path.exists(filepath), filepath+" does not exist."
         o,c,v = RFigurePickle.load(filepath)
         assert v>= "2"

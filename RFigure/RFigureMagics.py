@@ -48,7 +48,7 @@ class MyArgumentParser(argparse.ArgumentParser):
 
 @magics_class
 class RFigureMagics(Magics):
-    epilog = """
+    epilog_save = """
                 Examples (in IPython/Jupyter):
 
                 In[1]:
@@ -88,7 +88,7 @@ class RFigureMagics(Magics):
         prog='%%rfig_save',
         description = ("Will save a RFigure, whose instructions are the "
                             "code written in the remaining of the cell."),
-        add_help=False,epilog=textwrap.dedent(epilog),
+        add_help=False,epilog=textwrap.dedent(epilog_save),
         formatter_class=argparse.RawDescriptionHelpFormatter)
 
     parser_save.add_argument("--help","-h",
@@ -132,7 +132,7 @@ class RFigureMagics(Magics):
         else:
             args.d = eval(args.d[0],find_ipython_locals())
         if args.c is None:
-            args.c =[]
+            args.c = ""
         else:
             args.c = eval(args.c[0],find_ipython_locals())
         if args.fig_type is None:
@@ -149,6 +149,31 @@ class RFigureMagics(Magics):
     rfig_save.__doc__ = parser_save.format_help()
 
 
+    epilog_load = ""
+    parser_load = MyArgumentParser(
+        prog='%%rfig_load',
+        description = ("Will load a RFigure in the Jupyter notebook."),
+        epilog=textwrap.dedent(epilog_load),
+        formatter_class=argparse.RawDescriptionHelpFormatter)
+
+    parser_load.add_argument("--dict_variables",'-d',
+        help="the variable name of the dictionary in which will be stored the "
+            "variables of the RFigure. If none is given, import in the "
+            "notebook locals.",
+        nargs=1)
+    parser_load.add_argument("--instructions",'-i',
+        help="the variable name of the string in which will be stored the "
+            "instructions of the RFigure. If none is given, create a new cell "
+            "filled with the instructions",
+        nargs=1)
+    parser_load.add_argument("--commentaries",'-c',
+        help="the variable name of the string in which will be stored the "
+            "commentaries of the RFigure.",
+        nargs=1)
+    parser_load.add_argument("filepath",
+        help="Path of the file to open.",
+        nargs='?')
+
     @line_magic
     def rfig_load(self,line):
         """ Magic function to open an existing rfigure and import the
@@ -163,6 +188,8 @@ class RFigureMagics(Magics):
         self.shell.run_cell("%pylab ")
         find_ipython_locals().update(rf.dict_variables)
         self.shell.set_next_input('{}'.format(raw_code))
+        # self.shell.user_ns.update(...)
+    rfig_load.__doc__ = parser_load.format_help()
 
 
 
