@@ -125,7 +125,7 @@ class RFigureMagics(Magics):
             self.parser_save.print_help()
             return True
         if args.filepath is None:
-            self.parser_save.error("the following arguments are required: file")
+            self.parser_save.error("the following arguments are required: filepath")
         if args.d is None:
             args.d = find_vars_dict(cell)
             print("We determined the RFigure variables to be: `"+"`, `".join(args.d.keys())+"`")
@@ -142,6 +142,11 @@ class RFigureMagics(Magics):
         else:
             args.fig_type = args.fig_type[0]
 
+        cell = cell.strip()
+        if cell.startswith("%pylab"):
+            # if the first line is a pylab magic, remove the first line
+            cell = '\n'.join(cell.split('\n')[1:])
+
         rf = RFigureCore(d=args.d,i=cell,c=args.c,filepath=args.filepath)
         if args.format_name:
             rf.formatName()
@@ -149,45 +154,132 @@ class RFigureMagics(Magics):
     rfig_save.__doc__ = parser_save.format_help()
 
 
+    epilog_list_var = """
+                Examples (in IPython/Jupyter):
+
+                In[1]:
+                > a = np.arange(0,10,.1)
+                > b = np.cos(a)
+
+                In[2]:
+                > %list_var
+                > plot(a,b)
+                We determined the RFigure variables to be: `a`, `b`
+
+                In[3]:
+                > %list_var a_dict
+                > plot(a,b)
+                We determined the RFigure variables to be: `a`, `b`
+
+                In[4]:
+                > print(a_dict.keys())
+                dict_keys(['a','b'])
+                """
+    parser_list_var = MyArgumentParser(
+        prog='%%rfig_list_var',
+        description = ("Detects the variables in the code of the cell."),
+        add_help=False,epilog=textwrap.dedent(epilog_list_var),
+        formatter_class=argparse.RawDescriptionHelpFormatter)
+    parser_list_var.add_argument("--help","-h",
+        help="show this help message and exit",
+        action="store_true")
+    parser_list_var.add_argument("dict_variable",
+        help="the variable name of the dictionary in which will be stored the "
+                "variables detected in the cell. If none is given, only prints "
+                "its keys.",
+        nargs='?')
+    @cell_magic
+    def rfig_list_var(self,line,cell):
+        args = self.parser_list_var.parse_args(shlex.split(line))
+        if args.help is True:
+            self.parser_list_var.print_help()
+            return True
+        d = find_vars_dict(cell)
+        print("We determined the RFigure variables to be: `"+"`, `".join(d.keys())+"`")
+        if not args.dict_variable is None:
+            print("args.dict_variable[0]",args.dict_variable)
+            self.shell.user_ns.update({args.dict_variable:d})
+    rfig_list_var.__doc__ = parser_list_var.format_help()
+
     epilog_load = ""
+    """
+                Examples (in IPython/Jupyter):
+
+                In[1]:
+                > # Opens the RFigure Test.rfig3:
+                > # 1) import its variables in the notebook locals
+                > # 2) checks that %pylab is imported (if not addd it)
+                > # 3) create a new cell with the instructions
+                > %rfig_load "Test.rfig3"
+
+                In[2]:
+                > # Opens the RFigure Test.rfig3:
+                > # 1) stores the variables in `ddd`
+                > # 2) stores the instructions in `iii`
+                > # 3) stores the commentaries in `ccc`
+                > %rfig_load -i iii -c ccc -d ddd "Test.rfig3"
+                """
     parser_load = MyArgumentParser(
         prog='%%rfig_load',
         description = ("Will load a RFigure in the Jupyter notebook."),
-        epilog=textwrap.dedent(epilog_load),
+        add_help=False,epilog=textwrap.dedent(epilog_load),
         formatter_class=argparse.RawDescriptionHelpFormatter)
-
-    parser_load.add_argument("--dict_variables",'-d',
+    parser_load.add_argument("--help","-h",
+        help="show this help message and exit",
+        action="store_true")
+    parser_load.add_argument('-d',
         help="the variable name of the dictionary in which will be stored the "
             "variables of the RFigure. If none is given, import in the "
             "notebook locals.",
         nargs=1)
-    parser_load.add_argument("--instructions",'-i',
+    parser_load.add_argument('-i',
         help="the variable name of the string in which will be stored the "
             "instructions of the RFigure. If none is given, create a new cell "
-            "filled with the instructions",
+            "filled with the instructions. Also checks if the magic `%%pylab` "
+            "has been executed. If not, it adds the command `%%pylab` at the "
+            "begining of the instructions",
         nargs=1)
-    parser_load.add_argument("--commentaries",'-c',
+    parser_load.add_argument('-c',
         help="the variable name of the string in which will be stored the "
             "commentaries of the RFigure.",
         nargs=1)
     parser_load.add_argument("filepath",
         help="Path of the file to open.",
         nargs='?')
-
     @line_magic
     def rfig_load(self,line):
         """ Magic function to open an existing rfigure and import the
         instructions and update the locals with the rfigure variables.
         """
-        raise NotImplementedError("Still in devellopement")
-        line = line.strip()
 
-        rf = RFigureCore.load(line)
+        args = self.parser_load.parse_args(shlex.split(line))
+        if args.help:
+            self.parser_load.print_help()
+            return True
+        if args.filepath is None:
+            self.parser_load.error("the following arguments are required: filepath")
+
+        rf = RFigureCore.load(args.filepath)
+        if args.d is None:
+            self.shell.user_ns.update(rf.dict_variables)
+        else:
+            self.shell.user_ns.update({args.d:rf.dict_variables})
+
 
         raw_code = rf.instructions
-        self.shell.run_cell("%pylab ")
-        find_ipython_locals().update(rf.dict_variables)
-        self.shell.set_next_input('{}'.format(raw_code))
+        if not all([mod in sys.modules for mod in
+                ["numpy","matplotlib","figsize","plt","pylab" "mlab", "pyplot"]
+                ]):
+            #Heuristic to know if the magics %pylab has been alredy exectued
+            raw_code = "%pylab\n"+raw_code
+
+        if args.i is None:
+            self.shell.set_next_input('{}'.format(raw_code))
+        else:
+            self.shell.user_ns.update({args.i[0]:raw_code})
+
+        if not args.c is None:
+            self.shell.user_ns.update({args.c[0]: rf.commentaries})
         # self.shell.user_ns.update(...)
     rfig_load.__doc__ = parser_load.format_help()
 
