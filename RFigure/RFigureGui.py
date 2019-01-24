@@ -488,14 +488,27 @@ class TableVariables(QtWidgets.QTableWidget):
         keys = list(self.saveFigureGui.dict_variables.keys())
         keys.sort()
         items = [(k,self.saveFigureGui.dict_variables[k]) for k in keys]
+        # Compute the size of teh variables
         for i,(k,v) in enumerate(items):
             self.setItem(i,0,QtWidgets.QTableWidgetItem(k))
             self.setItem(i,1,QtWidgets.QTableWidgetItem(str(type(v))))
-
-            try:
-                len_ = len(v)
-            except TypeError:
-                len_ = 1
+            def get_length(var):
+                res = 0
+                if type(var) == list or type(var) == tuple:
+                    for x in var: res+=get_length(x)
+                elif type(var) == dict:
+                    for x,y in var.items(): res+=get_length(x)+get_length(y)
+                elif type(var) == np.ndarray :
+                    # the method `take` is to deal with the case where
+                    # var.shape==(,) (singleton):
+                    res = var.size*get_length(var.take(0))
+                else:
+                    try:
+                        res = len(var) # string
+                    except TypeError: #int, float, etc.
+                        res = 1
+                return res
+            len_ = get_length(v)
             if len_>1000:
                 len_ = "%.0e"%len_
             self.setItem(i,2,QtWidgets.QTableWidgetItem(str(len_)))
