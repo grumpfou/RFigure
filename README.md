@@ -1,7 +1,7 @@
 # RFigure version 3
 
 [![GPL Licence](https://badges.frapsoft.com/os/gpl/gpl.svg?v=103)](https://opensource.org/licenses/GPL-3.0/)
-<img src="https://img.shields.io/badge/Python-_3-brightgreen.svg">[![Build Status](https://travis-ci.com/grumpfou/RFigure.svg?branch=master)](https://travis-ci.com/grumpfou/RFigure)
+![](https://img.shields.io/badge/Python-_3-brightgreen.svg)[![Build Status](https://travis-ci.com/grumpfou/RFigure.svg?branch=master)](https://travis-ci.com/grumpfou/RFigure)
 
 
 ## Forewords
@@ -30,10 +30,10 @@ Alternately, you can explicitly save in you user directories using:
 pip install --user .
 ```
 
-***Note:*** It is possible that by using the ```--user``` option, the script
+**Note:** It is possible that by using the `--user` option, the script
 **rfig** is not saved in a directory which is in the environment variable
-"PATH". In that case, be sure to add the directory that contains **rfig**
-(usually ~/.local/bin/) to "PATH" manually (see
+"PATH". In that case, be sure to add the directory that contains *rfig**
+(usually `~/.local/bin/`) to "PATH" manually (see
 <https://askubuntu.com/questions/799302/ubuntu-cant-find-an-executable-file-in-local-bin>)
 
 
@@ -41,6 +41,7 @@ pip install --user .
 ### Quick Example with console
 
 Open Python terminal and try:
+
 ```
 import RFigure,numpy
 X = numpy.arange(0,10,0.1)
@@ -63,7 +64,7 @@ instructions using the script automatically installed **rfig**:
 > $ rfig ./Test.rfig3
 
 In which case you have the following interface:
-![](./ExampleGui.png)
+![](ExampleGui.png)
 
 ### Example using a magic function in Jupyter notebooks (IPython)
 A Jupyter magic function exists to automatically save figures from Jupyter

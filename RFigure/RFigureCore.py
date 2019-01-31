@@ -33,7 +33,12 @@ path_to_header = os.path.join(file_dir,path_to_header)
 
 # matplotlib.pyplot.ion()
 
+
+
 class RFigureCore:
+    """
+    This si the RFigureCore core class.
+    """
     ext = '.rfig3'
     fig_type_list=['eps','pdf','png']
     def __init__(self,
@@ -43,8 +48,11 @@ class RFigureCore:
         """
         This function will save the figure into a propper way, in order to open
         it again.
+
+        Parameters
+        ----------
         - d : dict
-            dictionnary that contain the variable usefull to plot the figure.
+            dictionary that contain the variable useful to plot the figure.
         - i : str
             instructions, string that contains the python code to create the
             figure.
@@ -53,25 +61,25 @@ class RFigureCore:
         - file_split : str
             file_split it the string that will separate the instructions. What
             will be bollow the first instance of will be considered as the
-            instructions. If `file_split` string is not encontrered, keeps the
-            whole isntructions
+            instructions. If `file_split` string is not encountered, keeps the
+            whole instructions
         - filepath : str
-            the path to the file (usefull for the local header and to directly
+            the path to the file (useful for the local header and to directly
             save the file)
 
-        Example:
-        ```
-        import RFigure,numpy
-        X = numpy.arange(0,10,0.1)
-        Y = numpy.cos(X)
-        i = "plot(X,Y)" # the instrucutions
-        d = dict(X=X,Y=Y) # the data to display
-        c = "This is a test" # the commentaries associate with the figures
-        rf = RFigure.RFigureCore(d=d,i=i,c=c)
-        rf.show() # execute the instructions to be sure it works
-        rf.save(filepath='./Test.rfig3') # only save the rfig3 file
-        rf.save(filepath='./Test.rfig3',fig_type='pdf') # save the rfig3 file as well as the pdf associated
-        ```
+        Example 
+        -------
+        
+        >>> import RFigure,numpy
+        ... X = numpy.arange(0,10,0.1)
+        ... Y = numpy.cos(X)
+        ... i = "plot(X,Y)" # the instrucutions
+        ... d = dict(X=X,Y=Y) # the data to display
+        ... c = "This is a test" # the commentaries associate with the figures
+        ... rf = RFigure.RFigureCore(d=d,i=i,c=c)
+        ... rf.show() # execute the instructions to be sure it works
+        ... rf.save(filepath='./Test.rfig3') # only save the rfig3 file
+        ... rf.save(filepath='./Test.rfig3',fig_type='pdf') # save the rfig3 file as well as the pdf associated
         """
         self.instructions = "" if i is None else i
         self.commentaries = "" if c is None else c

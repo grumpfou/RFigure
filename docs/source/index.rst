@@ -6,9 +6,20 @@
 Welcome to RFigure's documentation!
 ===================================
 
+.. this will need m2r installed.
+
+.. mdinclude:: ../../README.md
+
+
 .. toctree::
    :maxdepth: 2
    :caption: Contents:
+
+   apidocs
+
+
+
+
 
 
 
