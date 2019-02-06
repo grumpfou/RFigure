@@ -46,6 +46,20 @@ if has_pandas:
     authorized_types.append(pandas.core.frame.DataFrame)
 
 def isAuthorized(v):
+    """Function that determines if the object is authorised to be saved in a
+    rpickle file. It checks recusivally (if a list or a dict) that the object
+    can indeed be represented in a rpickle file.
+
+    Parameters
+    ----------
+    v : any object
+        the object to check
+
+    Returns
+    -------
+    res : bool
+        the status of the object
+    """
     if type(v) in [list,tuple]:
         return all([isAuthorized(var) for var in v])
     elif type(v)==numpy.ndarray and has_numpy:
@@ -56,13 +70,21 @@ def isAuthorized(v):
         return (type(v) in authorized_types)
 
 def save(objects,filepath,commentaries="",version=None,ext='rpk2'):
-    """
-    - objects : the object to save (can be a list or a dict if needed).
-    - filepath : the place where to save the sile, if has no extension,
-        it will take the one of the class.
-    - commentaries : string that contains commentaries about the thing
-    - version : the version of the software that should use the pickle.
-    - ext : the file extension
+    """Function that will save the given objects in a rpickle file.
+
+    Parameters
+    ----------
+    objects : list of dict
+        the object to save (can be a list or a dict if needed).
+    filepath : str
+        the place where to save the sile, if has no extension, it will take the
+        one of the class.
+    commentaries : str
+        string that contains commentaries about the thing
+    version : str
+        the version of the software that should use the pickle.
+    ext : str
+        the file extension
     """
     if version == None: version = __version__
     path,e = os.path.splitext(filepath)
@@ -81,6 +103,21 @@ def save(objects,filepath,commentaries="",version=None,ext='rpk2'):
         fid.close()
 
 def object_to_txt(objects,imports):
+    """Function that will transform any object in its string version
+
+    Parameters
+    ----------
+    objects : in %s
+        the object to represent as a string
+    imports : list of str
+        list of all the libraries needed to define the object (will be updated
+        insitus)
+
+    Returns:
+    res : str
+        the string representation of the object
+
+    """
     if type(objects) not in authorized_types:
         raise ValueError("The type "+str(type(objects))+" can not be save "+
             "using this pickle, only the ones in this list: "+str(authorized_types))
@@ -106,13 +143,23 @@ def object_to_txt(objects,imports):
     else:
         res += repr(objects)
     return res
-
+object_to_txt.__doc__ = object_to_txt.__doc__%(str(authorized_types))
 
 def load(filepath):
     """ Load the RPickle file of filepath
-    - filepath: path to the file to load
-    Returns:
-    - objets, commentaries, version
+
+    Parameters
+    ---------
+    filepath: path to the file to load
+
+    Returns
+    -------
+    objets : list or dict
+        the saved objects
+    commentaries : str
+        the commentaries stored in the file
+    version : str
+        the version string stored in the file
     """
     fid = gzip.GzipFile(filepath,'rb')
     try :

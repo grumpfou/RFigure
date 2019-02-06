@@ -9,7 +9,7 @@ import warnings
 with warnings.catch_warnings():
     warnings.simplefilter("ignore")
     matplotlib.use('Qt5Agg')
-"This is a comment"
+    
 import matplotlib.pyplot
 # matplotlib.pyplot.ion()
 matplotlib.pyplot.show._needmain = False
@@ -36,7 +36,13 @@ class RFigureGui(RFigureCore,QtWidgets.QWidget):
         """
         A class that inherit from RFigureCore for the core aspects and QWidget
         for the Gui aspects.
-        - d,i,c,file_split,filepath :  see RFigureCore docuementation
+
+        Parameters
+        ----------
+        d,i,c,file_split,filepath :
+            see RFigureCore docuementation
+        parent : QtGui.QWidget
+            the parent widget if this widget
         """
         QtWidgets.QWidget.__init__(self,parent=parent)
         RFigureCore.__init__(self,*args,**kargs)
@@ -124,7 +130,10 @@ class RFigureGui(RFigureCore,QtWidgets.QWidget):
         The saving function called by the `Save` button.
         Ask for confirmation and automotically save the image (png,pdf or eps)
         at the same time.
-        - filepath : str
+
+        Paramters
+        ---------
+        filepath : str
             the file where to save the figure (by default, take the
             `self.filepath` attribute)
         """
@@ -169,7 +178,10 @@ class RFigureGui(RFigureCore,QtWidgets.QWidget):
 
     def open(self,filepath):
         """Open the rfig file from the corresponding filepath.
-        - filepath : str
+
+        Paramters
+        ---------
+        filepath : str
             the file path of the figure to open
         """
         sf = RFigureCore.open(self,filepath)
@@ -210,6 +222,7 @@ class RFigureGui(RFigureCore,QtWidgets.QWidget):
         return RFigureGui(dict_variables=rfigcore.dict_variables,
                                 instructions=rfigcore.instructions,
                                 commentaries=rfigcore.commentaries,
+                                filepath=rfigcore.filepath,
                                 )
 
 
@@ -230,15 +243,23 @@ class RFigureGui(RFigureCore,QtWidgets.QWidget):
 
 
     def closeEvent(self,event):
-        """ Reimplementation of the method to close all the matplotlib figures before
-        closing the widget .
+        """ Reimplementation of the method to close all the matplotlib figures
+        before closing the widget.
+
+        Parameters
+        ----------
+        event : QEvent
+            the close event that needs to be handled
         """
         matplotlib.pyplot.close('all')
         QtWidgets.QWidget.closeEvent(self,event)
 
     def outputWritten(self, text):
-        """Appends text to the console.
-        - text : str
+        """Appends text to the terminal console.
+
+        Parameters
+        ----------
+        text : str
             Text to add to the console.
         """
         # Maybe QTextEdit.append() works as well, but this is how I do it:
@@ -252,8 +273,10 @@ class RFigureGui(RFigureCore,QtWidgets.QWidget):
     def isModified(self):
         """ Determine if the figure instructions or commentaries have been
         modified.
+
         Returns
-        - state : bool
+        -------
+        state : bool
             True if the instructions or commentaries have been modified since
             last save.
         """
@@ -327,8 +350,10 @@ class RFigureMainWindow(QtWidgets.QMainWindow):
     @QtCore.pyqtSlot()
     def slotOpen(self,filepath=None):
         """Slot to open a figure
-        Parameter:
-        - filepath : str
+
+        Parameters
+        ----------
+        filepath : str
             The file path to open. If None, ask the user which file to open.
         """
         self.checkBeforeClose()
@@ -343,7 +368,9 @@ class RFigureMainWindow(QtWidgets.QMainWindow):
     @QtCore.pyqtSlot()
     def slotSave(self,filepath=None):
         """Slot to save the figure
-        Parameter:
+
+        Parameters
+        ----------
         - filepath : str
             The file path where to save the figure.
             If None, either take the string in `self.lineEdit_filepath`, or
@@ -401,8 +428,14 @@ class RFigureMainWindow(QtWidgets.QMainWindow):
 
 
     def checkBeforeClose(self):
-        """Checks if the document has been modified before closing. If it has, ask the
-        user if they wants to save it.
+        """Checks if the document has been modified before closing. If it has,
+        ask the user if they wants to save it.
+
+        Returns
+        -------
+        res : QtWidgets.QMessageBox status
+            the QtWidgets.QMessageBox status (QtWidgets.QMessageBox.Yes or
+            QtWidgets.QMessageBox.No) depending on the answer
         """
         if self.rFigureWidget.isModified():
             res=QtWidgets.QMessageBox.question(
@@ -417,7 +450,13 @@ class RFigureMainWindow(QtWidgets.QMainWindow):
         return QtWidgets.QMessageBox.Yes
 
     def closeEvent(self, event):
-        """Checks if we have changed something without saving"""
+        """Checks if we have changed something without saving
+
+        Parameters
+        ----------
+        event : QEvent
+            the event to handle
+        """
         res=self.checkBeforeClose()
         if (res == QtWidgets.QMessageBox.Yes) or (res == QtWidgets.QMessageBox.No):
             event.accept()
@@ -454,11 +493,12 @@ class TableVariables(QtWidgets.QTableWidget):
         self.saveFigureGui=saveFigureGui
         # self.connect(SIGNAL(returnPressed()),ui->homeLoginButton,SIGNAL(clicked()))
 
-    def keyPressEvent(self,event):
-        if event.key()==QtCore.Qt.Key_Delete:
-            self.deleteItem(self.currentRow ())
-        if event.key()==QtCore.Qt.Key_F2:
-            self.renameItem(self.currentRow ())
+    # def keyPressEvent(self,event):
+
+    #     if event.key()==QtCore.Qt.Key_Delete:
+    #         self.deleteItem(self.currentRow ())
+    #     if event.key()==QtCore.Qt.Key_F2:
+    #         self.renameItem(self.currentRow ())
 
 
     # def deleteItem(self,row):
@@ -484,6 +524,9 @@ class TableVariables(QtWidgets.QTableWidget):
     #
 
     def updateFromDict(self):
+        """Function called when a new `dict_variables` has been introduced in
+        the `RFigureGui`. It updates the list of varibales in the table.
+        """
         self.setRowCount(len(self.saveFigureGui.dict_variables))
         keys = list(self.saveFigureGui.dict_variables.keys())
         keys.sort()

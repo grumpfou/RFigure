@@ -51,25 +51,24 @@ class RFigureCore:
 
         Parameters
         ----------
-        - d : dict
+        d : dict
             dictionary that contain the variable useful to plot the figure.
-        - i : str
+        i : str
             instructions, string that contains the python code to create the
             figure.
-        - c : str
+        c : str
             commentaries where the user can describe the figure.
-        - file_split : str
+        file_split : str
             file_split it the string that will separate the instructions. What
             will be bollow the first instance of will be considered as the
             instructions. If `file_split` string is not encountered, keeps the
             whole instructions
-        - filepath : str
+        filepath : str
             the path to the file (useful for the local header and to directly
             save the file)
 
-        Example 
+        Example
         -------
-        
         >>> import RFigure,numpy
         ... X = numpy.arange(0,10,0.1)
         ... Y = numpy.cos(X)
@@ -99,7 +98,9 @@ class RFigureCore:
         """
         The method executes the instructions (no `show` at the end).
 
-        - print_errors : bool
+        Parameters
+        ----------
+        print_errors : bool
             if True will print the errors rather than raise them (to avoid
             some troubles with PyQt5)
         """
@@ -148,6 +149,12 @@ class RFigureCore:
     def show(self,print_errors=False):
         """ Method that execute the code instructions and adds the
         matplotlib.pyplot.show() statement at the end.
+
+        Parameters
+        ----------
+        print_errors : bool
+            if True will print the errors rather than raise them (to avoid
+            some troubles with PyQt5)
         """
         self.execute(print_errors=print_errors)
         matplotlib.pyplot.show()
@@ -156,15 +163,24 @@ class RFigureCore:
     def save(self,filepath=None,fig_type=False,check_ext=True):
         """
         Will save the figure in a rfig file.
-        - filepath : str
+
+        Parameters
+        ----------
+        filepath : str
             The filepath where to save the figure. Adds the extension if
             necessary. If None, search the attribute self.filepath (if
             self.filepath also None, raise an error). Is not None, set
             `self.filepath` to the new file path.
-        - fig_type : if not False, will save the figure in the corresponding
+        fig_type : if not False, will save the figure in the corresponding
             format. Should be in [False,'png','pdf','eps']
-        - check_ext: bool
+        check_ext: bool
             if True, adds if necessary the extension to filepath
+
+        Retruns
+        -------
+        paths : list of str
+            the paths of the files created/edited (i.e. the rfig file and the
+            pdf/png/etc. that represents the figure)
         """
         if filepath is None:
             filepath = self.filepath
@@ -174,7 +190,8 @@ class RFigureCore:
 
         objects = [self.dict_variables,self.instructions]
 
-        RFigurePickle.save(objects,filepath,self.commentaries,version = __version__)
+        RFigurePickle.save(objects,filepath,self.commentaries,
+            version = __version__,ext=self.ext)
         paths = [filepath]
         if fig_type:
             paths1 = self.savefig(filepath,fig_type=fig_type)
@@ -183,13 +200,24 @@ class RFigureCore:
         return paths
 
     def savefig(self,fig_path,fig_type='png'):
-        """Method that will save the figure with the corresponding extention
-        - fig_path : str
+        """Method that will save the figure with the corresponding extention.
+
+        Parameters
+        ----------
+        fig_path : str
             The path of where to save the figure the figure.
-        - fig_type : str
-            The type of the figure, should be in ["eps","pdf",'png'].
+        fig_type : str
+            The type of the figure, should be in %s.
+
+
+        Returns
+        -------
+        paths : list of str
+            the paths of the files created/edited (i.e. the rfig file and the
+            pdf/png/etc. that represents the figure)
         """
-        assert fig_type in ["eps","pdf",'png'],"fig_type should be in "+str(["eps","pdf",'png'])
+
+        assert fig_type in self.fig_type_list
 
         dirpath,_=os.path.split(fig_path)
         if fig_type not in self.fig_type_list and not (fig_type is None):
@@ -231,6 +259,7 @@ class RFigureCore:
         matplotlib.pyplot.ioff()
         print ("========== END SAVE =========")
         return paths
+    savefig.__doc__ = savefig.__doc__%str(fig_type_list)
 
     def clean_instructions(self):
         """Ensure that the instruction are idented at the the first level.
@@ -261,7 +290,10 @@ class RFigureCore:
 
     def open(self,filepath):
         """Open the rfig file from filepath
-        - filepath: str
+
+        Parameters
+        ----------
+        filepath : str
             the path of the rfigure. Set the attribute self.filepath to this
             value
         """
@@ -280,37 +312,48 @@ class RFigureCore:
     @classmethod
     def load(cls,filepath):
         """Return a RFigureCore instance that had openned the rfigure.
-        - filepath: str
-            the path of the rfigure.
+
+        Parameters
+        ----------
+        filepath : str
+            the path of the rfigure to load
+
+        Returns
+        -------
+        rfig : RFigureCore
+            The RFigureCore instance created.
         """
-        sfig=cls()
-        sfig.open(filepath)
-        return sfig
+        rfig=cls()
+        rfig.open(filepath)
+        return rfig
 
     @staticmethod
     def update(fig_path,d=None,i=None,c=None,mode='append',fig_type=False):
         """
         Update the dict_variables of an already existing file:
-        Parameters:
-            fig_path: str
-                The rfig2 file to update.
-            d: dict
-                The dict to update with.
-            i: str
-                The instricution to update with.
-            c: str
-                The commentary to update with.
-            mode: str in ['append','replace']
-                if mode=='append':
-                    will update the dict and add instructions and
-                    commentaries to the allready instructions and
-                    commentaries
-                if mode=='replace':
-                    will replace the dict, instructions and
-                    commentaries
-        Returns:
-            rfig : RFigureCore instance
-                the RFigureCore instance with updated dict_variables
+
+        Parameters
+        ----------
+        fig_path: str
+            The rfig2 file to update.
+        d: dict
+            The dict to update with.
+        i: str
+            The instricution to update with.
+        c: str
+            The commentary to update with.
+        mode: str in ['append','replace']
+            if mode=='append':
+                will update the dict and add instructions and
+                commentaries to the allready instructions and
+                commentaries
+            if mode=='replace':
+                will replace the dict, instructions and
+                commentaries
+        Returns
+        -------
+        rfig : RFigureCore instance
+            the RFigureCore instance with updated dict_variables
         """
         rfig =  RFigureCore.load(fig_path)
 
@@ -341,11 +384,18 @@ class RFigureCore:
         where foo is the current filename. If the filpath is already under this
         format, do not change it. It updates the attribute `self.filepath`.
 
+        Parameters
+        ----------
         filepath : str
             the filepath to format, by default takes `self.filename`
 
-        Example (with each time, 20181201 corresponding to the curent date):
+        Returns
         -------
+        filepath : str
+            the new filepath with the updated file name
+
+        Example (with each time, 20181201 corresponding to the curent date)
+        -------------------------------------------------------------------
         > rf = RFigureCore(filpath='./foo/faa.rfig3')
         > rf.formatName()
         "./foo/Figure_20181201_faa.rfig3"
@@ -367,12 +417,19 @@ class RFigureCore:
         """
         Changes/adds if necessary the extension to the filepath. Update the
         attribute `self.filepath` accordingly
+
+        Parameters
+        ----------
         filepath : str
             the filepath to format.
         ext :  str
             the extension (the dot needs to be included). By default, takes
             `self.ext`.
 
+        Returns
+        -------
+        filepath : str
+            the new filepath with the updated file extension
         """
         if ext==None: ext=self.ext
         dirpath,filename = os.path.split(filepath)

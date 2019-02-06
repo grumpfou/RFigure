@@ -3,6 +3,7 @@ import datetime,re
 import textwrap
 import numpy as np
 import subprocess
+
 class RDateDisplay:
     """Methods to display the string that represent the date.
     """
@@ -11,12 +12,14 @@ class RDateDisplay:
         """ Will return a string containing the date under the format YYYYMMDD.
 
         Parameters
-        - date : int or str
+        ----------
+        date : int or str
             Which day should be refered. If int, refers to the number of day
             compared to today (negative for the past, positive for the future).
             If str, should be in [""Today", "Yesterday, "Tomorrow"] (by default
             "Today").
-        - with_hour : If True return add the hours to the string. The format
+        with_hour : bool
+            If True return add the hours to the string. The format
             will then be YYYYMMDDHHMMSS.
         """
         dico={
@@ -44,10 +47,22 @@ class RDateDisplay:
 
 def RTextWrap(text,nb=79,sep='\n',begin="") :
     """Will return the text properly wrapped
-    text : the textg to wrap
-    nb : the limit at which we wrap the text
-    sep : the char that seperate the paragraphs
-    begin : the char that should begin each line
+
+    Parameters
+    ----------
+    text : str
+        the textg to wrap
+    nb : int
+        the limit at which we wrap the text
+    sep : str
+        the char that seperate the paragraphs
+    begin : str
+        the char that should begin each line
+
+    Returns
+    -------
+    wrapped_text : str
+        the wrapped version of the text
     """
     l = text.split(sep)
     ll = [textwrap.fill(f.strip(),nb-len(begin),
