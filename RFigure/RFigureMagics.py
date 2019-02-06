@@ -1,4 +1,5 @@
 from . import RFigureCore
+from . import RFigurePickle
 import os,re,sys,argparse,shlex,textwrap
 import numpy as np
 from IPython.core.magic import  (Magics, magics_class, line_magic,
@@ -9,11 +10,12 @@ def find_list_variables(instructions,locals_):
     # NOTE: will also remove something like a="# this is not a comment" # this is a comment
     lines = [line.split('#')[0] for line in instructions.split("\n")]
     instructions = '\n'.join(lines)
+    instructions = re.sub(r'\s*for .*in',"",instructions)
 
-    vars_ = re.findall(r'\b[a-zA-Z_][a-zA-Z0-9_]*\b',instructions)
+    vars_ = re.findall(r'\b\w+\b',instructions)
     vars_ = list(set(vars_))
     vars_ = [a for a in vars_ if a in locals_]
-    vars_ = [a for a in vars_ if type(locals_[a]) in {np.ndarray,list,int,float,str,bool}]
+    vars_ = filter(lambda x : RFigurePickle.isAuthorized(locals_[x]),vars_)
     return vars_
 
 def find_ipython_locals():

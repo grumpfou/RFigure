@@ -45,6 +45,16 @@ if has_numpy:
 if has_pandas:
     authorized_types.append(pandas.core.frame.DataFrame)
 
+def isAuthorized(v):
+    if type(v) in [list,tuple]:
+        return all([isAuthorized(var) for var in v])
+    elif type(v)==numpy.ndarray and has_numpy:
+        return (v.dtype.type in authorized_types)
+    elif type(v)==pandas.core.frame.DataFrame and has_pandas:
+        return (v.dtype.type in authorized_types)
+    else:
+        return (type(v) in authorized_types)
+
 def save(objects,filepath,commentaries="",version=None,ext='rpk2'):
     """
     - objects : the object to save (can be a list or a dict if needed).
