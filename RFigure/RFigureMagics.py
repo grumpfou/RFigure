@@ -5,16 +5,54 @@ import numpy as np
 from IPython.core.magic import  (Magics, magics_class, line_magic,
                                 cell_magic, line_cell_magic)
 def find_list_variables(instructions,locals_):
+    """Try ot find the names of  variables that are used in the instructions.
 
+    Parameters
+    ----------
+    instructions : str
+        the instructions in which we find the variables
+    locals_ : dict
+        the dict in whhich should be the variables
+
+
+    Returns
+    -------
+    vars_ : list of str
+        list of all the name of the variables used in the instructions
+    """
     # Remove commentaries
     # NOTE: will also remove something like a="# this is not a comment" # this is a comment
     lines = [line.split('#')[0] for line in instructions.split("\n")]
     instructions = '\n'.join(lines)
-    instructions = re.sub(r'\s*for .*in',"",instructions)
+    # remove assignments
+    instructions = re.sub(r'\b\w+\b *=',"",instructions)
 
+    # we search the all the words
     vars_ = re.findall(r'\b\w+\b',instructions)
     vars_ = list(set(vars_))
+
+    # we remove the varibales of the for loops if they are not used before in the instructions
+    for res in re.finditer(r'\s*for (.*)in',instructions):
+        pos = res.start()
+        vars_string = res.groups()[0].strip()
+
+        # to deal with example lifke "for i,(x,y) in enumerate(.....)"
+        vars_string = vars_string.replace('(','')
+        vars_string = vars_string.replace(')','')
+
+        # example: "for x, y in range(10)" → var_list=['x','y']
+        var_list = [r.strip() for r in vars_string.split(',')]
+
+        for v in var_list:
+            pos1 = re.search(r'\b%s\b'%v,instructions).start()
+            # if the first iterance of `v` is at the for loop,
+            if pos1>=pos and v in vars_:
+                # we remove `v` from `vars_`
+                vars_.remove(v)
+
+    # we filter all the variables that are in locals_
     vars_ = [a for a in vars_ if a in locals_]
+    # we filter all the variables that can be saved in RFigurePickle
     vars_ = filter(lambda x : RFigurePickle.isAuthorized(locals_[x]),vars_)
     return vars_
 
