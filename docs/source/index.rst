@@ -22,7 +22,6 @@ Welcome to RFigure's documentation!
 
 
 
-
 Indices and tables
 ==================
 
