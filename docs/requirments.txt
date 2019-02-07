@@ -1,3 +1,2 @@
 m2r
 ipython
-matplotlib
