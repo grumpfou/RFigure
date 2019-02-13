@@ -89,39 +89,35 @@ class MyArgumentParser(argparse.ArgumentParser):
 @magics_class
 class RFigureMagics(Magics):
     epilog_save = """
-                Examples (in IPython/Jupyter):
+                Examples
+                --------
+                (in IPython/Jupyter)
 
-                In[1]:
-                > import numpy as np
-                > a = np.arange(0,10,.1)
-                > b = np.cos(a)
-                > comment = "A comment"
-                > diction = {'a':a,'b':1/a}
+                >>> import numpy as np
+                ... a = np.arange(0,10,.1)
+                ... b = np.cos(a)
+                ... comment = "A comment"
+                ... diction = {'a':a,'b':1/a}
 
-                In[2]:
-                > %%rfig_save Test
-                > # search the variables in the instructions, no comment and save in pdf
-                > plt.plot(a,b)
+                >>> %%rfig_save Test
+                ... # search the variables in the instructions, no comment and save in pdf
+                ... plt.plot(a,b)
 
-                In[3]:
-                > %%rfig_save -c comment Test
-                > # search the variables in the instructions, with a comment and save in pdf
-                > plt.plot(a,b)
+                >>> %%rfig_save -c comment Test
+                ... # search the variables in the instructions, with a comment and save in pdf
+                ... plt.plot(a,b)
 
-                In[4]:
-                > %%rfig_save --fig_type png
-                > # search the variables in the instructions, no comment and save in png
-                > plt.plot(a,b)
+                >>> %%rfig_save --fig_type png
+                ... # search the variables in the instructions, no comment and save in png
+                ... plt.plot(a,b)
 
-                In[5]:
-                > %%rfig_save -d diction Test
-                > # specify other variables, no comment, save in pdf
-                > plt.plot(a,b)
+                >>> %%rfig_save -d diction Test
+                >>> # specify other variables, no comment, save in pdf
+                >>> plt.plot(a,b)
 
-                In[5]:
-                > %%rfig_save --format_name Test
-                > # search the variables in the instructions, format the filename
-                > plt.plot(a,b)
+                >>> %%rfig_save --format_name Test
+                ... # search the variables in the instructions, format the filename
+                ... plt.plot(a,b)
                 """
 
     parser_save = MyArgumentParser(

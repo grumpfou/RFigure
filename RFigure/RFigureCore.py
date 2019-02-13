@@ -176,7 +176,7 @@ class RFigureCore:
         check_ext: bool
             if True, adds if necessary the extension to filepath
 
-        Retruns
+        Returns
         -------
         paths : list of str
             the paths of the files created/edited (i.e. the rfig file and the
@@ -350,6 +350,8 @@ class RFigureCore:
             if mode=='replace':
                 will replace the dict, instructions and
                 commentaries
+
+
         Returns
         -------
         rfig : RFigureCore instance
@@ -394,15 +396,17 @@ class RFigureCore:
         filepath : str
             the new filepath with the updated file name
 
-        Example (with each time, 20181201 corresponding to the curent date)
-        -------------------------------------------------------------------
-        > rf = RFigureCore(filpath='./foo/faa.rfig3')
-        > rf.formatName()
+        Example
+        -------
+        >>> rf = RFigureCore(filpath='./foo/faa.rfig3')
+        >>> rf.formatName()
         "./foo/Figure_20181201_faa.rfig3"
-        > rf.formatName(filepath='./foo/fii.rfig3')
+        >>> rf.formatName(filepath='./foo/fii.rfig3')
         "./foo/Figure_20181201_fii.rfig3"
-        > rf.formatName(filepath='./foo/Figure_20181201_fuu.rfig3')
+        >>> rf.formatName(filepath='./foo/Figure_20181201_fuu.rfig3')
         "./foo/Figure_20181201_fuu.rfig3"
+
+        (with each time, 20181201 corresponding to the curent date)
         """
         if filepath is None:
             filepath = self.filepath
