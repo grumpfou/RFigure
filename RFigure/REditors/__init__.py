@@ -143,6 +143,19 @@ class RPythonEditor(QtWidgets.QPlainTextEdit):
                 if str(cur1.selectedText())=='\t':
                     cur1.removeSelectedText()
 
+        # increase the indentation corresponding to the previous line
+        elif  e.key() in [QtCore.Qt.Key_Enter,QtCore.Qt.Key_Return]:
+            QtWidgets.QPlainTextEdit.keyPressEvent(self,e)
+
+            cur = self.textCursor()
+            cur.select(QtGui.QTextCursor.BlockUnderCursor)
+            if str(cur.selectedText()).strip()=="":# if it is an empty line
+                prev_text = cur.block().previous().text()
+                i = 0
+                while i<len(prev_text) and prev_text[i]=='\t' : i+=1
+                if len(prev_text)>0 and prev_text.strip()[-1]==':': i+=1
+                cur.insertText('\t'*i)
+
         elif e.text() in self.delimiters:
             # QtWidgets.QTextEdit.keyPressEvent(self,event)
             self.blockSignals(True)
