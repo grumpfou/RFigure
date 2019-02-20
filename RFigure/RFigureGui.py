@@ -9,7 +9,7 @@ import warnings
 with warnings.catch_warnings():
     warnings.simplefilter("ignore")
     matplotlib.use('Qt5Agg')
-    
+
 import matplotlib.pyplot
 # matplotlib.pyplot.ion()
 matplotlib.pyplot.show._needmain = False
@@ -176,6 +176,22 @@ class RFigureGui(RFigureCore,QtWidgets.QWidget):
                 self.editor_python.document().setModified(False)
                 self.editor_commentaries.document().setModified(False)
 
+    def savefig(self,filepath):
+        fig_type             =str(self.comboBox.currentText())
+        if fig_type=='None':
+            return False
+
+        filepath1 = os.path.splitext(filepath)[0]
+        msg= "We are going to export the figure in \n"+filepath1+'.'+fig_type
+        msg = RTextWrap(str(msg))
+
+        res = QtWidgets.QMessageBox.question ( self, "Export confirmation",
+            msg,QtWidgets.QMessageBox.Yes | QtWidgets.QMessageBox.Cancel)
+
+        if (res == QtWidgets.QMessageBox.Yes):
+            res = RFigureCore.savefig(self,filepath, fig_type=fig_type)
+
+
     def open(self,filepath):
         """Open the rfig file from the corresponding filepath.
 
@@ -294,6 +310,7 @@ class RFigureMainWindow(QtWidgets.QMainWindow):
         self.actionOpen = QtWidgets.QAction("Open",self)
         self.actionSave = QtWidgets.QAction("Save",self)
         self.actionSaveAs = QtWidgets.QAction("SaveAs",self)
+        self.actionExport = QtWidgets.QAction("Export",self)
         self.actionClose = QtWidgets.QAction("Close",self)
         self.actionFormatName = QtWidgets.QAction("Format",self)
         self.actionAbout= QtWidgets.QAction("About",self)
@@ -308,10 +325,12 @@ class RFigureMainWindow(QtWidgets.QMainWindow):
         self.actionOpen.triggered.connect(self.slotOpen)
         self.actionSave.triggered.connect(self.slotSave)
         self.actionSaveAs.triggered.connect(self.slotSaveAs)
+        self.actionExport.triggered.connect(self.slotExport)
         self.actionClose.triggered.connect(self.close)
         self.lineEdit_filepath.textChanged.connect(self.checkDirpath)
         self.button_formatname.clicked.connect(self.slotFormatName)
         self.actionAbout.triggered.connect(self.slotAbout)
+        self.rFigureWidget.comboBox.currentIndexChanged[str].connect(self.checkExport)
 
 
         self.actionSave.setShortcuts(QtGui.QKeySequence.Save)
@@ -324,6 +343,7 @@ class RFigureMainWindow(QtWidgets.QMainWindow):
         toolbar.addAction(self.actionOpen)
         toolbar.addAction(self.actionSave)
         toolbar.addAction(self.actionSaveAs)
+        toolbar.addAction(self.actionExport)
         toolbar.addAction(self.actionClose)
         toolbar.addAction(self.actionAbout)
 
@@ -367,7 +387,7 @@ class RFigureMainWindow(QtWidgets.QMainWindow):
 
     @QtCore.pyqtSlot()
     def slotSave(self,filepath=None):
-        """Slot to save the figure
+        """Slot to save the figure (and export it)
 
         Parameters
         ----------
@@ -384,6 +404,28 @@ class RFigureMainWindow(QtWidgets.QMainWindow):
         filepath = self.rFigureWidget.formatExt(filepath)
         self.rFigureWidget.save(filepath)
         self.lineEdit_filepath.setText(filepath)
+
+    @QtCore.pyqtSlot()
+    def slotExport(self,filepath=None):
+        """Slot to only export the figure
+
+        Parameters
+        ----------
+        - filepath : str
+            The file path where to export the figure. If None, either take the
+            string in `self.lineEdit_filepath`, or if `self.lineEdit_filepath`
+            is empty, asks the user. Changes the extention to make it correspond
+            to the one in the `self.rFigureWidget.comboBox`.
+        """
+
+        if filepath is None:
+            filepath = str(self.lineEdit_filepath.text()).strip()
+            if len(filepath)==0:
+                return self.slotSaveAs()
+        filepath = self.rFigureWidget.formatExt(filepath)
+        self.rFigureWidget.savefig(filepath)
+        self.lineEdit_filepath.setText(filepath)
+
 
     @QtCore.pyqtSlot()
     def slotSaveAs(self):
@@ -477,6 +519,20 @@ class RFigureMainWindow(QtWidgets.QMainWindow):
             palette.setColor( QtGui.QPalette.Text, QtCore.Qt.red)
         self.lineEdit_filepath.setPalette(palette)
         self.rFigureWidget.filepath = filepath
+
+    def checkExport(self,res):
+        """Chacks if the combo of the fig_type is to None. If it is the case
+        it disables the `self.actionExport`.
+
+        Parameters
+        ----------
+        res : str
+            the content of `self.rFigureWidget.comboBox`
+        """
+        if res == 'None':
+            self.actionExport.setEnabled(False)
+        else:
+            self.actionExport.setEnabled(True)
 
 
 
