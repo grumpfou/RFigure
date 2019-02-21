@@ -307,13 +307,23 @@ class RFigureMainWindow(QtWidgets.QMainWindow):
         QtWidgets.QMainWindow.__init__(self,*args,**kargs)
         self.rFigureWidget = RFigureGui(self)
 
-        self.actionOpen = QtWidgets.QAction("Open",self)
-        self.actionSave = QtWidgets.QAction("Save",self)
-        self.actionSaveAs = QtWidgets.QAction("SaveAs",self)
-        self.actionExport = QtWidgets.QAction("Export",self)
-        self.actionClose = QtWidgets.QAction("Close",self)
+        dict_icons = dict(open="003-folder.png",
+                          save="002-save.png",
+                          saveas="008-saveas.png",
+                          export="004-export.png",
+                          close="005-cross.png",
+                          about="007-question.png",
+                            )
+        dict_icons = {k:os.path.join(file_dir,'images',v) for k,v in dict_icons.items()}
+        dict_icons = {k:QtGui.QIcon(v) for k,v in dict_icons.items()}
+
+        self.actionOpen = QtWidgets.QAction(dict_icons['open'],"Open",self)
+        self.actionSave = QtWidgets.QAction(dict_icons['save'],"Save",self)
+        self.actionSaveAs = QtWidgets.QAction(dict_icons['saveas'],"SaveAs",self)
+        self.actionExport = QtWidgets.QAction(dict_icons['export'],"Export",self)
+        self.actionClose = QtWidgets.QAction(dict_icons['close'],"Close",self)
+        self.actionAbout= QtWidgets.QAction(dict_icons['about'],"About",self)
         self.actionFormatName = QtWidgets.QAction("Format",self)
-        self.actionAbout= QtWidgets.QAction("About",self)
 
 
         self.lineEdit_filepath = QtWidgets.QLineEdit(
@@ -346,9 +356,10 @@ class RFigureMainWindow(QtWidgets.QMainWindow):
         toolbar.addAction(self.actionExport)
         toolbar.addAction(self.actionClose)
         toolbar.addAction(self.actionAbout)
+        toolbar.setToolButtonStyle(QtCore.Qt.ToolButtonTextBesideIcon)
 
         self.setWindowTitle('RFigureGui %s : Save matplotlib figure'%__version__)
-        self.setWindowIcon(QtGui.QIcon(os.path.join(file_dir,'images/logo.png')))
+        self.setWindowIcon(QtGui.QIcon(os.path.join(file_dir,'images','logo.png')))
 
         wid_layout = QtWidgets.QHBoxLayout()
         wid_layout.addWidget(QtWidgets.QLabel("File path:"))
