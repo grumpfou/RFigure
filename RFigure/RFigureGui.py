@@ -176,7 +176,7 @@ class RFigureGui(RFigureCore,QtWidgets.QWidget):
                 self.editor_python.document().setModified(False)
                 self.editor_commentaries.document().setModified(False)
 
-    def savefig(self,filepath):
+    def exportFig(self,filepath,**kargs):
         fig_type             =str(self.comboBox.currentText())
         if fig_type=='None':
             return False
@@ -190,7 +190,7 @@ class RFigureGui(RFigureCore,QtWidgets.QWidget):
 
         if (res == QtWidgets.QMessageBox.Yes):
             res = RFigureCore.savefig(self,filepath, fig_type=fig_type)
-
+        return res
 
     def open(self,filepath):
         """Open the rfig file from the corresponding filepath.
@@ -342,6 +342,8 @@ class RFigureMainWindow(QtWidgets.QMainWindow):
         self.actionAbout.triggered.connect(self.slotAbout)
         self.rFigureWidget.comboBox.currentIndexChanged[str].connect(self.checkExport)
 
+        self.rFigureWidget.editor_python.textChanged.connect(lambda *args,**kargs:self.actionSave.setEnabled(True))
+
 
         self.actionSave.setShortcuts(QtGui.QKeySequence.Save)
         self.actionSaveAs.setShortcuts(QtGui.QKeySequence.SaveAs)
@@ -394,6 +396,7 @@ class RFigureMainWindow(QtWidgets.QMainWindow):
                 return False
         self.rFigureWidget.open(filepath)
         self.lineEdit_filepath.setText(filepath)
+        self.actionSave.setEnabled(False)
 
 
     @QtCore.pyqtSlot()
@@ -415,6 +418,7 @@ class RFigureMainWindow(QtWidgets.QMainWindow):
         filepath = self.rFigureWidget.formatExt(filepath)
         self.rFigureWidget.save(filepath)
         self.lineEdit_filepath.setText(filepath)
+        self.actionSave.setEnabled(False)
 
     @QtCore.pyqtSlot()
     def slotExport(self,filepath=None):
@@ -434,7 +438,7 @@ class RFigureMainWindow(QtWidgets.QMainWindow):
             if len(filepath)==0:
                 return self.slotSaveAs()
         filepath = self.rFigureWidget.formatExt(filepath)
-        self.rFigureWidget.savefig(filepath)
+        self.rFigureWidget.exportFig(filepath)
         self.lineEdit_filepath.setText(filepath)
 
 
@@ -469,9 +473,8 @@ class RFigureMainWindow(QtWidgets.QMainWindow):
 
           "<p>Sources, bug reporting, help are available on "
           "<a href=\"http://github.com/grumpfou/RFigure\">http://github.com/grumpfou/RFigure</a>.</p>"
-          "<p>The logo is under Creative Commons Zero 1.0 Public Domain "
-          "License and available "
-          "<a href=\"https://openclipart.org/detail/172389/graph\">here.</p>"
+          "<p>Licenses of the icons available "
+          "<a href=\"https://github.com/grumpfou/RFigure/blob/master/RFigure/images/icons_credits.md\">here.</p>"
             )
         msgBox = QtWidgets.QMessageBox()
         # QtCore.Qt.convertFromPlainText(text)
