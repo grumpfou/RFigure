@@ -96,7 +96,12 @@ class RFigureCore:
 
     def execute(self,print_errors=False):
         """
-        The method executes the instructions (no `show` at the end).
+        The method executes the instructions (no `show` at the end). Proceed in
+        four steps:
+        1. executes the general header file `RFigure/RFigureConfig/RFigureHeader.py`
+        2. executes the local header file `./.RFigureHeaderLocal.py`
+        3. updates the locals with teh rfig variables `self.dict_variables`
+        4. executes the rfig instructions `self.instructions`
 
         Parameters
         ----------
@@ -111,40 +116,37 @@ class RFigureCore:
         matplotlib.pyplot.close('all')
         if os.path.exists(path_to_header):
             with  open (path_to_header,'r') as fid:
-                instructions = fid.read()
+                instructions_header_general = fid.read()
         else:
             print("Could not find the path to header")
-            instructions = ""
-
-        instructions +='\n\n'
+            instructions_header_general = ""
 
         if not dirpath is None:
             path_to_header_local = os.path.join(dirpath,'./.RFigureHeaderLocal.py')
         if os.path.exists(path_to_header_local):
             with open (path_to_header_local,'r') as fid:
-                s = fid.read()
-                instructions += s
+                instructions_header_local = fid.read()
+        else:
+            instructions_header_local = ""
 
-        nb_line_header = len(instructions.split('\n'))
-        instructions+=self.instructions
+        dict_variables = dict()
+        def exec_instructions(instructions,filename,locals_):
+            try:
+                code = compile(instructions,filename,'exec')
+                exec(code,{},locals_)
+            except Exception as e :
+                if print_errors:
+                    traceback.print_exc()
+                    return False
+                else:
+                    raise e
+            return locals_
 
-        try:
-            exec(instructions,self.dict_variables.copy())
-        except Exception as e :
-            mess = "Traceback (most recent call last):\n"
-            for frame in traceback.extract_tb(sys.exc_info()[2]):
-                fname,lineno,fn,text = frame
-                if fname == '<string>':
-                    # removing the number of line of the header
-                    lineno += -nb_line_header+1
-                    fname = 'PythonInstructions'
-                mess += 'File "'+fname+'", line '+str(lineno)+', in '+fn+\
-                    '\n\t'+text+'\n'
-            mess+= e.__class__.__name__ +':'+str(e)
-            if print_errors:
-                print(mess)
-            else:
-                raise type(e)(mess)
+        locals_ = {}
+        exec_instructions(instructions_header_general,path_to_header,locals_)
+        exec_instructions(instructions_header_local,path_to_header_local,locals_)
+        locals_.update(self.dict_variables.copy())
+        exec_instructions(self.instructions,'RFigureInstructions',locals_)
 
     def show(self,print_errors=False):
         """ Method that execute the code instructions and adds the
