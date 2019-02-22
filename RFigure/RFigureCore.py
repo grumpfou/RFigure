@@ -100,13 +100,13 @@ class RFigureCore:
         four steps:
         1. executes the general header file `RFigure/RFigureConfig/RFigureHeader.py`
         2. executes the local header file `./.RFigureHeaderLocal.py`
-        3. updates the locals with teh rfig variables `self.dict_variables`
+        3. updates the locals with the rfig variables `self.dict_variables`
         4. executes the rfig instructions `self.instructions`
 
         Parameters
         ----------
         print_errors : bool
-            if True will print the errors rather than raise them (to avoid
+            if True, will print the errors rather than raise them (to avoid
             some troubles with PyQt5)
         """
         if self.filepath!=None:
