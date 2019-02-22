@@ -18,8 +18,12 @@ setup(name='rfigure',
       author_email='see on my website',
       license='GPL-3.0',
       packages=find_packages(),
+      package_data = {'RFigure':['images/*.png']},
       install_requires=["numpy", "matplotlib", "pyqt5"],
       include_package_data=True,
       scripts=['bin/rfig'],
-      data_files = [("config",['RFigure/RFigureConfig/RFigureHeader.py'])],
+      # data_files = [("config",['RFigure/RFigureConfig/RFigureHeader.py']),
+      #               ("bitmaps",['RFigure/RFigureConfig/RFigureHeader.py',
+      #                           ])
+      #               ],
       zip_safe=False)
