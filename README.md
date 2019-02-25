@@ -152,4 +152,4 @@ Will save figure whose instructions are the last lines of the cell.
   Because there is so much problem of compatibilities between the different
   versions of Python on this module. I better control the data with my own
   Pickle (the inconvenient is that it only deal with basic types)
-- The logo is under [Creative Commons Zero 1.0 Public Domain License](https://creativecommons.org/publicdomain/zero/1.0/) and available at https://openclipart.org/detail/172389/graph
+- The licenses of the logo and icons are available on [here](https://github.com/grumpfou/RFigure/blob/master/RFigure/images/icons_credits.md)
