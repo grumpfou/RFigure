@@ -8,6 +8,6 @@ install:
   - pip install pandas
   - pip install --quiet .
   - pip install jsonschema<3
-# command to run tests
+# command to run tests#
 script:
   - py.test --no-qt
