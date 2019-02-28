@@ -32,7 +32,7 @@ def find_list_variables(instructions,locals_):
     vars_ = list(set(vars_))
 
     # we remove the varibales of the for loops if they are not used before in the instructions
-    for res in re.finditer(r'\s*for (.*)in',instructions):
+    for res in re.finditer(r'\s*for (.*)\bin\b',instructions):
         pos = res.start()
         vars_string = res.groups()[0].strip()
 
@@ -44,6 +44,7 @@ def find_list_variables(instructions,locals_):
         var_list = [r.strip() for r in vars_string.split(',')]
 
         for v in var_list:
+            print("vars_string,v",vars_string,v)
             pos1 = re.search(r'\b%s\b'%v,instructions).start()
             # if the first iterance of `v` is at the for loop,
             if pos1>=pos and v in vars_:
