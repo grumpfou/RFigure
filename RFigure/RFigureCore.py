@@ -130,10 +130,12 @@ class RFigureCore:
             instructions_header_local = ""
 
         dict_variables = dict()
-        def exec_instructions(instructions,filename,locals_):
+        def exec_instructions(instructions,filename,globals_):
+            locals_ = {}
             try:
                 code = compile(instructions,filename,'exec')
-                exec(code,{},locals_)
+                exec(code,globals_,**locals_)
+                globals_.update(locals_)
             except Exception as e :
                 if print_errors:
                     traceback.print_exc()
@@ -142,11 +144,12 @@ class RFigureCore:
                     raise e
             return locals_
 
-        locals_ = {}
-        exec_instructions(instructions_header_general,path_to_header,locals_)
-        exec_instructions(instructions_header_local,path_to_header_local,locals_)
-        locals_.update(self.dict_variables.copy())
-        exec_instructions(self.instructions,'RFigureInstructions',locals_)
+        # locals_ = {}
+        globals_ = {}
+        exec_instructions(instructions_header_general,path_to_header,globals_)
+        exec_instructions(instructions_header_local,path_to_header_local,globals_)
+        globals_.update(self.dict_variables.copy())
+        exec_instructions(self.instructions,'RFigureInstructions',globals_)
 
     def show(self,print_errors=False):
         """ Method that execute the code instructions and adds the

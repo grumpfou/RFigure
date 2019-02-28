@@ -54,3 +54,21 @@ def test4():
     import RFigure
     assert os.path.exists(filepath_testfile1)
     rf = RFigure.RFigureCore.load(filepath_testfile1)
+
+def test5():
+    """
+    Ensures that the globals are well respected
+    """
+    i= '\n'.join([
+                "A = np.arange(20)",
+                "def aFunc():",
+                "	B = np.arange(20)",
+                "	return A+B",
+                "aFunc()",
+                ])
+
+    import RFigure
+    # d = dict() # the data to display
+    # c = "This is a test with pandas" # the commentaries associate with the figures
+    rf = RFigure.RFigureCore(d={},i=i,c='')
+    rf.show()
