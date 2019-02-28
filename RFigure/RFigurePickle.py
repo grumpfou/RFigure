@@ -167,7 +167,7 @@ def load(filepath):
     finally :
         fid.close()
 
-    fid = open (path_to_header,'r')
+    fid = open (os.path.normpath(path_to_header),'r')
     try :
         if pyth2:
             instructions = unicode(fid.read().decode('utf-8'))
