@@ -44,7 +44,6 @@ def find_list_variables(instructions,locals_):
         var_list = [r.strip() for r in vars_string.split(',')]
 
         for v in var_list:
-            print("vars_string,v",vars_string,v)
             pos1 = re.search(r'\b%s\b'%v,instructions).start()
             # if the first iterance of `v` is at the for loop,
             if pos1>=pos and v in vars_:
