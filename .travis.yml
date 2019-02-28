@@ -7,7 +7,7 @@ install:
   - pip install pytest-ipynb
   - pip install pandas
   - pip install --quiet .
-  - pip install jsonschema<"3"
+  - pip install "jsonschema<3"
 # command to run tests#
 script:
   - py.test --no-qt
