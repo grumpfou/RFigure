@@ -2,6 +2,7 @@
 from __future__ import absolute_import, division, print_function,unicode_literals
 import os,gzip
 import subprocess
+import random
 # import numpy as np
 
 __version__ = "2.1"
@@ -94,13 +95,15 @@ def save(objects,filepath,commentaries="",version=None,ext='rpk2'):
     to_save = object_to_txt([objects,commentaries,version],imports)
     to_save = '\n'.join(["import %s"%s for s in imports])+'\n'+to_save
 
-    fid = gzip.GzipFile(filepath,'wb')
+    filepath_tmp = filepath+'__tmp__'+str(random.randint(0,10000)).zfill(4) # create a temporary file
+    fid = gzip.GzipFile(filepath_tmp,'wb')
 
     try :
         fid.write(to_save.encode('utf-8'))
         print ("Pickle success")
     finally :
         fid.close()
+    os.rename(filepath_tmp,filepath)
 
 def object_to_txt(objects,imports):
     """Function that will transform any object in its string version

@@ -62,3 +62,17 @@ def test3():
     locals_ = dict(a=0)
     res = set(find_list_variables(instructions,locals_))
     assert len(res)==0
+
+    
+
+def test4():
+    """
+    make sure that there is no problem for the `for ... in ... for ... in` on the smae line
+    """
+    from RFigure.RFigureMagics import find_list_variables
+    instructions = """
+    [for to_remove1 in aa]+[for to_remove2 in bb]
+    """
+    locals_ = dict(a=0)
+    res = set(find_list_variables(instructions,locals_))
+    assert len(res)==0

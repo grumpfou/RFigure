@@ -32,6 +32,7 @@ def find_list_variables(instructions,locals_):
     vars_ = list(set(vars_))
 
     # we remove the varibales of the for loops if they are not used before in the instructions
+    # for res in re.finditer(r'\s*for +\b([\w ,]+)\b +\bin\b',instructions):
     for res in re.finditer(r'\s*for (.*)\bin\b',instructions):
         pos = res.start()
         vars_string = res.groups()[0].strip()
@@ -42,13 +43,19 @@ def find_list_variables(instructions,locals_):
 
         # example: "for x, y in range(10)" → var_list=['x','y']
         var_list = [r.strip() for r in vars_string.split(',')]
+        l_filter = lambda r: (not (re.match('(\w)+',r)  is None)) and (re.match('(\w)+',r).group()==r)
+        var_list = list(filter(l_filter,var_list))
 
         for v in var_list:
-            pos1 = re.search(r'\b%s\b'%v,instructions).start()
-            # if the first iterance of `v` is at the for loop,
-            if pos1>=pos and v in vars_:
-                # we remove `v` from `vars_`
-                vars_.remove(v)
+            try:
+                pos1 = re.search(r'\b%s\b'%v,instructions).start()
+
+                # if the first iterance of `v` is at the for loop,
+                if pos1>=pos and v in vars_:
+                    # we remove `v` from `vars_`
+                    vars_.remove(v)
+            except:
+                print('Problem with the regular expression: \'%s\''%v)
 
     # we filter all the variables that are in locals_
     vars_ = [a for a in vars_ if a in locals_]
