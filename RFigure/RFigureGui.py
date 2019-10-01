@@ -643,7 +643,8 @@ else:
     app = QtWidgets.QApplication.instance()
 
 
-def main(argv):
+def main(argv=None):
+    if argv is None: argv=[]
     iconpath = os.path.join(os.path.split(__file__)[0],'logo.png')
     app.setWindowIcon(QtGui.QIcon(iconpath))
 

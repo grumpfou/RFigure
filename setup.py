@@ -29,4 +29,9 @@ setup(name='rfigure',
                     # ("bitmaps",['RFigure/RFigureConfig/RFigureHeader.py',
                     #             ])
                     ],
-      zip_safe=False)
+      entry_points = {
+          'console_scripts': [
+              'rfig = RFigure.RFigureGui:main',
+              ]
+      },
+zip_safe=False)
