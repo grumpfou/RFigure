@@ -63,9 +63,9 @@ def isAuthorized(v):
     """
     if type(v) in [list,tuple]:
         return all([isAuthorized(var) for var in v])
-    elif type(v)==numpy.ndarray and has_numpy:
+    elif has_numpy and type(v)==numpy.ndarray:
         return (v.dtype.type in authorized_types)
-    elif type(v)==pandas.core.frame.DataFrame and has_pandas:
+    elif has_pandas and type(v)==pandas.core.frame.DataFrame :
         return (v.dtype.type in authorized_types)
     else:
         return (type(v) in authorized_types)
@@ -103,6 +103,11 @@ def save(objects,filepath,commentaries="",version=None,ext='rpk2'):
         print ("Pickle success")
     finally :
         fid.close()
+
+    # if the file exists, we remove it, otherwise, error on Windows
+    if os.path.exists(filepath):
+        os.remove(filepath)
+
     os.rename(filepath_tmp,filepath)
 
 def object_to_txt(objects,imports):

@@ -21,9 +21,12 @@ setup(name='rfigure',
       package_data = {'RFigure':['images/*.png']},
       install_requires=["numpy", "matplotlib", "pyqt5"],
       include_package_data=True,
+      # entry_points={
+      #           'gui_scripts': ['rfigt = bin/rfig'],
+      #               },
       scripts=['bin/rfig'],
-      # data_files = [("config",['RFigure/RFigureConfig/RFigureHeader.py']),
-      #               ("bitmaps",['RFigure/RFigureConfig/RFigureHeader.py',
-      #                           ])
-      #               ],
+      data_files = [("config",['RFigure/RFigureConfig/RFigureHeader.py']),
+                    # ("bitmaps",['RFigure/RFigureConfig/RFigureHeader.py',
+                    #             ])
+                    ],
       zip_safe=False)
