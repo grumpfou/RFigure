@@ -172,9 +172,13 @@ class RFigureGui(RFigureCore,QtWidgets.QWidget):
                 d,_ = os.path.split(filepath)
                 msg = "The directory %s does not exist."%d
                 QtWidgets.QMessageBox.information ( self, "No saving", msg)
+                return False
             else:
                 self.editor_python.document().setModified(False)
                 self.editor_commentaries.document().setModified(False)
+                return True
+        return False
+
 
     def exportFig(self,filepath,**kargs):
         fig_type             =str(self.comboBox.currentText())
@@ -418,9 +422,10 @@ class RFigureMainWindow(QtWidgets.QMainWindow):
             if len(filepath)==0:
                 return self.slotSaveAs()
         filepath = self.rFigureWidget.formatExt(filepath)
-        self.rFigureWidget.save(filepath)
-        self.lineEdit_filepath.setText(filepath)
-        self.actionSave.setEnabled(False)
+        res = self.rFigureWidget.save(filepath)
+        if res:
+            self.lineEdit_filepath.setText(filepath)
+            self.actionSave.setEnabled(False)
 
     @QtCore.pyqtSlot()
     def slotExport(self,filepath=None):
@@ -644,7 +649,7 @@ else:
 
 
 def main(argv=None):
-    if argv is None: argv=[]
+    if argv is None: argv = sys.argv
     iconpath = os.path.join(os.path.split(__file__)[0],'logo.png')
     app.setWindowIcon(QtGui.QIcon(iconpath))
 

@@ -70,7 +70,7 @@ def isAuthorized(v):
     else:
         return (type(v) in authorized_types)
 
-def save(objects,filepath,commentaries="",version=None,ext='rpk2'):
+def save(objects,filepath,commentaries="",version=None,ext='.rpk2'):
     """Function that will save the given objects in a rpickle file.
 
     Parameters
@@ -85,12 +85,12 @@ def save(objects,filepath,commentaries="",version=None,ext='rpk2'):
     version : str
         the version of the software that should use the pickle.
     ext : str
-        the file extension
+        the file extension (the dot should be included)
     """
     if version == None: version = __version__
     path,e = os.path.splitext(filepath)
     if len(e)==0:
-        filepath+='.'+ext
+        filepath+=ext
     imports = []
     to_save = object_to_txt([objects,commentaries,version],imports)
     to_save = '\n'.join(["import %s"%s for s in imports])+'\n'+to_save
