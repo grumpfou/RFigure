@@ -114,7 +114,7 @@ class RFigureMagics(Magics):
                 ... # search the variables in the instructions, with a comment and save in pdf
                 ... plt.plot(a,b)
 
-                >>> %%rfig_save --fig_type png
+                >>> %%rfig_save --fig_type png Test
                 ... # search the variables in the instructions, no comment and save in png
                 ... plt.plot(a,b)
 
