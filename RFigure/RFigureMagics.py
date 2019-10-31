@@ -205,12 +205,12 @@ class RFigureMagics(Magics):
                 > b = np.cos(a)
 
                 In[2]:
-                > %list_var
+                > %%rfig_list_var
                 > plot(a,b)
                 We determined the RFigure variables to be: `a`, `b`
 
                 In[3]:
-                > %list_var a_dict
+                > %%rfig_list_var a_dict
                 > plot(a,b)
                 We determined the RFigure variables to be: `a`, `b`
 
@@ -326,7 +326,25 @@ class RFigureMagics(Magics):
         # self.shell.user_ns.update(...)
     rfig_load.__doc__ = parser_load.format_help()
 
+    @line_magic
+    def rfig_curdate(self,line):
+        """ Magic function that assign a different current date that will be
+        used when formating the names.
 
+        Examples (in IPython/Jupyter):
+
+        >>> %rfig_save --format_name Test
+        ... # Will save in the file `Figure_YYYYMMDD_Test.rfig3` where YYYYMMDD
+        ... # stands for the current date.
+        ... plt.plot(np.arange(10),np.arange(10))
+
+        >>> %rfig_crudate 19990909
+
+        >>> %rfig_save --format_name Test
+        ... # Will save in the file `Figure_19990909_Test.rfig3` whenever
+        ... plt.plot(np.arange(10),np.arange(10))
+        """
+        RFigureCore.CURDATE = line.strip()
 
 def load_ipython_extension(ipython):
     ipython.register_magics(RFigureMagics)
