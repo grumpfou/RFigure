@@ -32,7 +32,7 @@ path_to_header = os.path.join(file_dir,path_to_header)
 ########################################################################
 
 # matplotlib.pyplot.ion()
-
+CURDATE = None # you can reassign CURDATE to the date by default (something like `'20191031'` )
 
 
 class RFigureCore:
@@ -417,7 +417,11 @@ class RFigureCore:
             filepath = self.filepath
         dirpath,filename = os.path.split(filepath)
         if not re.match('^Figure_[0-9]{8}_',filename):
-            filename = 'Figure_'+RDateDisplay.cur_date()+'_'+filename
+            if CURDATE is None:
+                filename = 'Figure_'+RDateDisplay.cur_date()+'_'+filename
+            else:
+                assert  re.match('^[0-9]{8}$',CURDATE)
+                filename = 'Figure_'+CURDATE+'_'+filename
         filepath = os.path.join(dirpath,filename)
         self.filepath = filepath
         return filepath
