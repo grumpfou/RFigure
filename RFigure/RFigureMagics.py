@@ -50,7 +50,7 @@ def find_list_variables(instructions,locals_):
             try:
                 pos1 = re.search(r'\b%s\b'%v,instructions).start()
 
-                # if the first iterance of `v` is at the for loop,
+                # if the first occurence of `v` is at a for loop,
                 if pos1>=pos and v in vars_:
                     # we remove `v` from `vars_`
                     vars_.remove(v)
@@ -119,8 +119,8 @@ class RFigureMagics(Magics):
                 ... plt.plot(a,b)
 
                 >>> %%rfig_save -d diction Test
-                >>> # specify other variables, no comment, save in pdf
-                >>> plt.plot(a,b)
+                ... # specify other variables, no comment, save in pdf
+                ... plt.plot(a,b)
 
                 >>> %%rfig_save --format_name Test
                 ... # search the variables in the instructions, format the filename
@@ -198,24 +198,22 @@ class RFigureMagics(Magics):
 
 
     epilog_list_var = """
-                Examples (in IPython/Jupyter):
+                Examples
+                --------
+                (in IPython/Jupyter)
 
-                In[1]:
-                > a = np.arange(0,10,.1)
-                > b = np.cos(a)
+                >>> a = np.arange(0,10,.1)
+                ... b = np.cos(a)
 
-                In[2]:
-                > %%rfig_list_var
-                > plot(a,b)
+                >>> %%rfig_list_var
+                ... plot(a,b)
                 We determined the RFigure variables to be: `a`, `b`
 
-                In[3]:
-                > %%rfig_list_var a_dict
-                > plot(a,b)
+                >>> %%rfig_list_var a_dict
+                ... plot(a,b)
                 We determined the RFigure variables to be: `a`, `b`
 
-                In[4]:
-                > print(a_dict.keys())
+                >>> print(a_dict.keys())
                 dict_keys(['a','b'])
                 """
     parser_list_var = MyArgumentParser(
@@ -246,21 +244,21 @@ class RFigureMagics(Magics):
 
     epilog_load = ""
     """
-                Examples (in IPython/Jupyter):
+                Examples
+                --------
+                (in IPython/Jupyter)
 
-                In[1]:
-                > # Opens the RFigure Test.rfig3:
-                > # 1) import its variables in the notebook locals
-                > # 2) checks that %pylab is imported (if not addd it)
-                > # 3) create a new cell with the instructions
-                > %rfig_load "Test.rfig3"
+                >>> # Opens the RFigure Test.rfig3:
+                ... # 1) import its variables in the notebook locals
+                ... # 2) checks that %pylab is imported (if not addd it)
+                ... # 3) create a new cell with the instructions
+                ... %rfig_load "Test.rfig3"
 
-                In[2]:
-                > # Opens the RFigure Test.rfig3:
-                > # 1) stores the variables in `ddd`
-                > # 2) stores the instructions in `iii`
-                > # 3) stores the commentaries in `ccc`
-                > %rfig_load -i iii -c ccc -d ddd "Test.rfig3"
+                >>> # Opens the RFigure Test.rfig3:
+                ... # 1) stores the variables in `ddd`
+                ... # 2) stores the instructions in `iii`
+                ... # 3) stores the commentaries in `ccc`
+                ... %rfig_load -i iii -c ccc -d ddd "Test.rfig3"
                 """
     parser_load = MyArgumentParser(
         prog='%%rfig_load',
@@ -329,9 +327,12 @@ class RFigureMagics(Magics):
     @line_magic
     def rfig_curdate(self,line):
         """ Magic function that assign a different current date that will be
-        used when formating the names.
+        used when formating the names. Equivalent to change the value of
+        `RFigureCore.CURDATE`.
 
-        Examples (in IPython/Jupyter):
+        Examples
+        --------
+        (in IPython/Jupyter)
 
         >>> %rfig_save --format_name Test
         ... # Will save in the file `Figure_YYYYMMDD_Test.rfig3` where YYYYMMDD
@@ -339,9 +340,10 @@ class RFigureMagics(Magics):
         ... plt.plot(np.arange(10),np.arange(10))
 
         >>> %rfig_crudate 19990909
+        ... # set the curent date to `'19990909'`
 
         >>> %rfig_save --format_name Test
-        ... # Will save in the file `Figure_19990909_Test.rfig3` whenever
+        ... # Will save in the file `Figure_19990909_Test.rfig3`
         ... plt.plot(np.arange(10),np.arange(10))
         """
         RFigureCore.CURDATE = line.strip()
