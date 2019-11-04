@@ -165,7 +165,7 @@ class RFigureCore:
         matplotlib.pyplot.show()
 
 
-    def save(self,filepath=None,fig_type=False,check_ext=True):
+    def save(self,filepath=None,fig_type=None,check_ext=True):
         """
         Will save the figure in a rfig file.
 
@@ -176,8 +176,9 @@ class RFigureCore:
             necessary. If None, search the attribute self.filepath (if
             self.filepath also None, raise an error). Is not None, set
             `self.filepath` to the new file path.
-        fig_type : if not False, will save the figure in the corresponding
-            format. Should be in [False,'png','pdf','eps']
+        fig_type : None, str or list(str)
+            if not None, will save the figure in the corresponding format (if it
+             is a list, will save in several formats). Should be in %s.
         check_ext: bool
             if True, adds if necessary the extension to filepath
 
@@ -203,6 +204,7 @@ class RFigureCore:
             paths += paths1
         self.filepath = filepath
         return paths
+    save.__doc__ = save.__doc__%str(fig_type_list)
 
     def savefig(self,fig_path,fig_type='png'):
         """Method that will save the figure with the corresponding extention.
@@ -211,9 +213,9 @@ class RFigureCore:
         ----------
         fig_path : str
             The path of where to save the figure the figure.
-        fig_type : str
-            The type of the figure, should be in %s.
-
+        fig_type :  None, str or list(str)
+            if not None, will save the figure in the corresponding format (if it
+             is a list, will save in several formats). Should be in %s.
 
         Returns
         -------
@@ -221,6 +223,11 @@ class RFigureCore:
             the paths of the files created/edited (i.e. the rfig file and the
             pdf/png/etc. that represents the figure)
         """
+        if type(fig_type)==list:
+            paths = []
+            for ext in fig_type:
+                paths += self.savefig(fig_path=fig_path, fig_type=ext)
+            return paths
 
         assert fig_type in self.fig_type_list
 
@@ -333,7 +340,7 @@ class RFigureCore:
         return rfig
 
     @staticmethod
-    def update(fig_path,d=None,i=None,c=None,mode='append',fig_type=False):
+    def update(fig_path,d=None,i=None,c=None,mode='append',fig_type=None):
         """
         Update the dict_variables of an already existing file:
 

@@ -85,9 +85,9 @@ class RFigureGui(RFigureCore,QtWidgets.QWidget):
         button_show = QtWidgets.QPushButton('Show')
         button_clAll = QtWidgets.QPushButton('Close All')
 
-        self.comboBox = QtWidgets.QComboBox()
-        self.comboBox.addItems(self.fig_type_list+['None'])
-        self.comboBox.setCurrentIndex(self.comboBox.findText('pdf'))
+        self.checkBoxDict = {k:QtWidgets.QCheckBox(k, self) for k in self.fig_type_list}
+        self.checkBoxDict['pdf'].setChecked(True)
+
 
         splitter = QtWidgets.QSplitter(self)
         splitter.addWidget    (self.editor_python)
@@ -98,8 +98,6 @@ class RFigureGui(RFigureCore,QtWidgets.QWidget):
         lay.addWidget(button_clAll)
         lay.addWidget(QtWidgets.QLabel("List Variables:"))
         lay.addWidget(self.table_variables)
-        # lay.addWidget(QtWidgets.QLabel("Export format:"))
-        # lay.addWidget(self.comboBox)
         wid = QtWidgets.QWidget()
         wid.setLayout(lay)
         splitter.addWidget    (wid)
@@ -156,10 +154,14 @@ class RFigureGui(RFigureCore,QtWidgets.QWidget):
         self.commentaries    =str(self.editor_commentaries.toPlainText())
         # filepath = str(self.lineEdit_filepath.text())
         # filepath = self.formatName(filepath,onlyExt=True)
-        fig_type             =str(self.comboBox.currentText())
-        if fig_type=='None': fig_type=None
+        fig_type = [k for k in self.checkBoxDict if
+                                            self.checkBoxDict[k].isChecked()]
+        if len(fig_type)==0: fig_type=None
 
         msg= "We are going to save the figure in \n"+filepath
+        if fig_type:
+            msg += "\n and export it in:\n"
+            msg += '\n'.join([os.path.splitext(filepath)[0]+'.'+f for f in fig_type])
         msg = RTextWrap(str(msg))
 
         res = QtWidgets.QMessageBox.question ( self, "Saving confirmation",
@@ -181,13 +183,14 @@ class RFigureGui(RFigureCore,QtWidgets.QWidget):
 
 
     def exportFig(self,filepath,**kargs):
-        fig_type             =str(self.comboBox.currentText())
-        if fig_type=='None':
+        fig_type = [k for k in self.checkBoxDict if
+                                self.checkBoxDict[k].isChecked()]
+        if len(fig_type)==0:
             return False
-
         filepath1 = os.path.splitext(filepath)[0]
-        msg= "We are going to export the figure in \n"+filepath1+'.'+fig_type
-        msg = RTextWrap(str(msg))
+        msg= "We are going to export the figure in \n"
+        for ext in fig_type:
+            msg+= filepath1+'.'+ext+"\n"
 
         res = QtWidgets.QMessageBox.question ( self, "Export confirmation",
             msg,QtWidgets.QMessageBox.Yes | QtWidgets.QMessageBox.Cancel)
@@ -322,8 +325,8 @@ class RFigureMainWindow(QtWidgets.QMainWindow):
         dict_icons = {k:QtGui.QIcon(v) for k,v in dict_icons.items()}
 
         self.actionOpen = QtWidgets.QAction(dict_icons['open'],"Open",self)
-        self.actionSave = QtWidgets.QAction(dict_icons['save'],"Save",self)
-        self.actionSaveAs = QtWidgets.QAction(dict_icons['saveas'],"SaveAs",self)
+        self.actionSave = QtWidgets.QAction(dict_icons['save'],"Save + Export",self)
+        self.actionSaveAs = QtWidgets.QAction(dict_icons['saveas'],"Save As + Export",self)
         self.actionExport = QtWidgets.QAction(dict_icons['export'],"Export",self)
         self.actionClose = QtWidgets.QAction(dict_icons['close'],"Close",self)
         self.actionAbout= QtWidgets.QAction(dict_icons['about'],"About",self)
@@ -344,7 +347,9 @@ class RFigureMainWindow(QtWidgets.QMainWindow):
         self.lineEdit_filepath.textChanged.connect(self.checkDirpath)
         self.button_formatname.clicked.connect(self.slotFormatName)
         self.actionAbout.triggered.connect(self.slotAbout)
-        self.rFigureWidget.comboBox.currentIndexChanged[str].connect(self.checkExport)
+        for k in self.rFigureWidget.checkBoxDict:
+            self.rFigureWidget.checkBoxDict[k].stateChanged.connect(self.checkExport)
+
 
         self.rFigureWidget.editor_python.textChanged.connect(lambda *args,**kargs:self.actionSave.setEnabled(True))
 
@@ -361,7 +366,10 @@ class RFigureMainWindow(QtWidgets.QMainWindow):
         toolbar.addAction(self.actionSaveAs)
         toolbar.addAction(self.actionExport)
         toolbar.addWidget(QtWidgets.QLabel("Export format: "))
-        toolbar.addWidget(self.rFigureWidget.comboBox)
+        for k in self.rFigureWidget.fig_type_list:
+            toolbar.addWidget(self.rFigureWidget.checkBoxDict[k])
+
+
         toolbar.addAction(self.actionClose)
         toolbar.addAction(self.actionAbout)
         toolbar.setToolButtonStyle(QtCore.Qt.ToolButtonTextBesideIcon)
@@ -416,7 +424,6 @@ class RFigureMainWindow(QtWidgets.QMainWindow):
             If None, either take the string in `self.lineEdit_filepath`, or
             if `self.lineEdit_filepath` is empty, asks the user.
         """
-
         if filepath is None:
             filepath = str(self.lineEdit_filepath.text()).strip()
             if len(filepath)==0:
@@ -437,7 +444,7 @@ class RFigureMainWindow(QtWidgets.QMainWindow):
             The file path where to export the figure. If None, either take the
             string in `self.lineEdit_filepath`, or if `self.lineEdit_filepath`
             is empty, asks the user. Changes the extention to make it correspond
-            to the one in the `self.rFigureWidget.comboBox`.
+            to the one in the `self.rFigureWidget.checkBoxDict`.
         """
 
         if filepath is None:
@@ -541,20 +548,13 @@ class RFigureMainWindow(QtWidgets.QMainWindow):
         self.lineEdit_filepath.setPalette(palette)
         self.rFigureWidget.filepath = filepath
 
-    def checkExport(self,res):
-        """Chacks if the combo of the fig_type is to None. If it is the case
-        it disables the `self.actionExport`.
-
-        Parameters
-        ----------
-        res : str
-            the content of `self.rFigureWidget.comboBox`
+    def checkExport(self):
+        """Checks if the checkboxes of the fig_type is to None. If it is the
+        case it disables the `self.actionExport`.
         """
-        if res == 'None':
-            self.actionExport.setEnabled(False)
-        else:
-            self.actionExport.setEnabled(True)
-
+        res = any([k for k in self.rFigureWidget.checkBoxDict if
+                                self.rFigureWidget.checkBoxDict[k].isChecked()])
+        self.actionExport.setEnabled(res)
 
 
 class TableVariables(QtWidgets.QTableWidget):
