@@ -365,10 +365,16 @@ class RFigureMainWindow(QtWidgets.QMainWindow):
         toolbar.addAction(self.actionSave)
         toolbar.addAction(self.actionSaveAs)
         toolbar.addAction(self.actionExport)
-        toolbar.addWidget(QtWidgets.QLabel("Export format: "))
-        for k in self.rFigureWidget.fig_type_list:
-            toolbar.addWidget(self.rFigureWidget.checkBoxDict[k])
+        w = QtWidgets.QFrame()
+        w.setFrameShape( QtWidgets.QFrame.StyledPanel)
+        w.setLineWidth(1)
 
+        l = QtWidgets.QHBoxLayout()
+        l.addWidget(QtWidgets.QLabel("Export format: "))
+        for k in self.rFigureWidget.fig_type_list:
+            l.addWidget(self.rFigureWidget.checkBoxDict[k])
+        w.setLayout(l)
+        toolbar.addWidget(w)
 
         toolbar.addAction(self.actionClose)
         toolbar.addAction(self.actionAbout)
