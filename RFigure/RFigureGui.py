@@ -222,6 +222,9 @@ class RFigureGui(RFigureCore,QtWidgets.QWidget):
         RFigureCore.show(self,print_errors=True)
         print("============ END ============")
         # try:
+        # except:
+        #     print('toto')
+        # try:
         # except BaseException as e :
         #
         #     mess = str(e)
@@ -659,8 +662,6 @@ def main(argv=None):
     iconpath = os.path.join(os.path.split(__file__)[0],'logo.png')
     app.setWindowIcon(QtGui.QIcon(iconpath))
 
-    sf=QtWidgets.QWidget()
-
     if len(argv)>1:
         f = ' '.join(argv[1:])
         sf=RFigureMainWindow()
@@ -670,6 +671,13 @@ def main(argv=None):
     else:
         sf=RFigureMainWindow()
         sf.show()
+
+    def my_excepthook(type, value, tback):
+        res=type.__name__+":"+str(value)
+        msgBox=QtWidgets.QMessageBox.critical(sf, type.__name__, res)
+        sys.__excepthook__(type, value, tback)
+    sys.excepthook = my_excepthook
+
     sys.exit(app.exec_())
 
 
