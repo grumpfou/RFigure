@@ -5,6 +5,8 @@ project.
 """
 import matplotlib
 import warnings
+import inspect
+import textwrap
 
 with warnings.catch_warnings():
     warnings.simplefilter("ignore")
@@ -53,9 +55,9 @@ class RFigureCore:
         ----------
         d : dict
             dictionary that contain the variable useful to plot the figure.
-        i : str
+        i : str or func
             instructions, string that contains the python code to create the
-            figure.
+            figure. If it is a function, takes the source of the function.
         c : str
             commentaries where the user can describe the figure.
         file_split : str
@@ -80,7 +82,13 @@ class RFigureCore:
         ... rf.save(filepath='./Test.rfig3') # only save the rfig3 file
         ... rf.save(filepath='./Test.rfig3',fig_type='pdf') # save the rfig3 file as well as the pdf associated
         """
-        self.instructions = "" if i is None else i
+        if i is None:
+            self.instructions = ""
+        elif callable(i):
+            self.instructions = textwrap.dedent(
+                                '\n'.join(inspect.getsource(i).split('\n')[1:]))
+        else:
+            self.instructions = i
         self.commentaries = "" if c is None else c
         self.dict_variables = {} if d is None else d
         self.file_split = file_split

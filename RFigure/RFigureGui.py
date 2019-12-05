@@ -564,6 +564,8 @@ class RFigureMainWindow(QtWidgets.QMainWindow):
         res = any([k for k in self.rFigureWidget.checkBoxDict if
                                 self.rFigureWidget.checkBoxDict[k].isChecked()])
         self.actionExport.setEnabled(res)
+        self.actionSave.setText("Save"+" + Export"*res)
+        self.actionSaveAs.setText("Save As"+"+ Export"*res)
 
 
 class TableVariables(QtWidgets.QTableWidget):
