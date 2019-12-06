@@ -400,7 +400,7 @@ class RFigureCore:
         rfig.save(fig_type=fig_type)
         return rfig
 
-    def formatName(self,filepath=None):
+    def formatName(self,filepath=None,replace_current=True):
         """
         Format the filename under the format: "path/Figure_YYYYMMDD_foo.rfig3"
         where foo is the current filename. If the filpath is already under this
@@ -410,6 +410,9 @@ class RFigureCore:
         ----------
         filepath : str
             the filepath to format, by default takes `self.filename`
+        replace_current : bool
+            if True, then replace the current `self.filepath` by the one
+            obtained
 
         Returns
         -------
@@ -438,10 +441,10 @@ class RFigureCore:
                 assert  re.match('^[0-9]{8}$',self.CURDATE)
                 filename = 'Figure_'+self.CURDATE+'_'+filename
         filepath = os.path.join(dirpath,filename)
-        self.filepath = filepath
+        if replace_current: self.filepath = filepath
         return filepath
 
-    def formatExt(self,filepath=None,ext=None):
+    def formatExt(self,filepath=None,ext=None,replace_current=True):
         """
         Changes/adds if necessary the extension to the filepath. Update the
         attribute `self.filepath` accordingly
@@ -453,6 +456,9 @@ class RFigureCore:
         ext :  str
             the extension (the dot needs to be included). By default, takes
             `self.ext`.
+        replace_current : bool
+            if True, then replace the current `self.filepath` by the one
+            obtained
 
         Returns
         -------
@@ -466,7 +472,7 @@ class RFigureCore:
             filename += ext
 
         filepath = os.path.join(dirpath,filename)
-        self.filepath = filepath
+        if replace_current: self.filepath = filepath
         return filepath
 
 

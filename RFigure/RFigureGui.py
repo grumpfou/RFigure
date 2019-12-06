@@ -469,8 +469,15 @@ class RFigureMainWindow(QtWidgets.QMainWindow):
     def slotSaveAs(self):
         """Slot to save the figure by asking the user where to save it.
         """
-
-        filepath = QtWidgets.QFileDialog().getSaveFileName(self)[0]
+        dir = str(self.lineEdit_filepath.text()).strip('./ \\')
+        if dir=='':
+            dir = self.rFigureWidget.formatExt(
+                self.rFigureWidget.formatName('./untitled',replace_current=False),
+                replace_current=False)
+        else:
+            dir = self.rFigureWidget.formatExt(dir,replace_current=False)
+        dir = os.path.abspath(dir)
+        filepath = QtWidgets.QFileDialog().getSaveFileName(self,directory = dir)[0]
         if not filepath:
             return False
         self.slotSave(filepath)
