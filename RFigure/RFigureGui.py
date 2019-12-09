@@ -584,9 +584,46 @@ class TableVariables(QtWidgets.QTableWidget):
     def __init__(self,saveFigureGui,list_var=None):
         if list_var==None: list_var=[]
         QtWidgets.QTableWidget.__init__ (self, len(list_var), 3)
+        self.keysList= []
         self.setHorizontalHeaderLabels(["Name","Type","Size"])
         self.saveFigureGui=saveFigureGui
-        # self.connect(SIGNAL(returnPressed()),ui->homeLoginButton,SIGNAL(clicked()))
+        self.itemChanged.connect(self.changeVarName)
+
+    def changeVarName(self,item):
+        print('coucou')
+        old_k = self.keysList[item.row()]
+        #TODO check it is a good format for a variable name
+        new_k = item.text().strip()
+        if old_k==new_k:
+            pass
+        elif str(new_k) in self.saveFigureGui.dict_variables:
+            msg = "The name of the variable `"+str(new_k)+"` is allready used."
+            res = QtWidgets.QMessageBox.critical(self, "Rename variable", msg)
+        elif not re.match('^[a-zA-Z_][a-zA-Z0-9]*$',new_k):
+            msg = "The name of the variable `"+str(new_k)+"` is not a correct variable name"
+            res = QtWidgets.QMessageBox.critical(self, "Rename variable", msg)
+        else:
+            msg = "Do you whant to rename the variable `%s` in `%s`?"%(old_k,new_k)
+            res = QtWidgets.QMessageBox.question (self, "Rename Variable", msg,
+                    QtWidgets.QMessageBox.Yes | QtWidgets.QMessageBox.Cancel)
+            if (res == QtWidgets.QMessageBox.Yes):
+                v = self.saveFigureGui.dict_variables.pop(old_k)
+                self.saveFigureGui.dict_variables[new_k] = v
+                #TODO set saveAction  enable TRue
+        self.updateFromDict()
+
+        #     msg = "How rename the variable <"+self.item(row,0).text()+">?"
+        #     res = QtWidgets.QInputDialog.getText(self, "Rename variable",msg,text =old_k)
+        #
+        #     if res[1] and str(res[0])!='' and res[0]!=old_k:
+        #         if str(res[0]) in self.saveFigureGui.dict_variables.keys():
+        #             msg = "The name of the variable <"+str(res[0])+"> is allready used."
+        #             res = QtWidgets.QMessageBox.critical(self, "Rename variable", msg)
+        #         else:
+        #             v = self.saveFigureGui.dict_variables.pop(old_k)
+        #             self.saveFigureGui.dict_variables[str(res[0])] = v
+        #             self.updateFromDict()
+        #        # self.connect(SIGNAL(returnPressed()),ui->homeLoginButton,SIGNAL(clicked()))
 
     # def keyPressEvent(self,event):
 
@@ -622,14 +659,20 @@ class TableVariables(QtWidgets.QTableWidget):
         """Function called when a new `dict_variables` has been introduced in
         the `RFigureGui`. It updates the list of varibales in the table.
         """
+        self.blockSignals(True)
+        self.rowToKeyDict = dict()
         self.setRowCount(len(self.saveFigureGui.dict_variables))
         keys = list(self.saveFigureGui.dict_variables.keys())
         keys.sort()
         items = [(k,self.saveFigureGui.dict_variables[k]) for k in keys]
         # Compute the size of teh variables
         for i,(k,v) in enumerate(items):
-            self.setItem(i,0,QtWidgets.QTableWidgetItem(k))
-            self.setItem(i,1,QtWidgets.QTableWidgetItem(str(type(v))))
+            item = QtWidgets.QTableWidgetItem(k)
+
+            self.setItem(i,0,item)
+            item = QtWidgets.QTableWidgetItem(type(v).__name__)
+            item.setFlags(QtCore.Qt.ItemIsSelectable|QtCore.Qt.ItemIsEnabled);
+            self.setItem(i,1,item)
             def get_length(var):
                 res = 0
                 if type(var) == list or type(var) == tuple:
@@ -649,7 +692,11 @@ class TableVariables(QtWidgets.QTableWidget):
             len_ = get_length(v)
             if len_>1000:
                 len_ = "%.0e"%len_
-            self.setItem(i,2,QtWidgets.QTableWidgetItem(str(len_)))
+            item = QtWidgets.QTableWidgetItem(str(len_))
+            item.setFlags(QtCore.Qt.ItemIsSelectable|QtCore.Qt.ItemIsEnabled);
+            self.setItem(i,2,item)
+            self.keysList= keys
+            self.blockSignals(False)
 
 class EmittingStream(QtCore.QObject):
 
