@@ -178,6 +178,7 @@ class RFigureGui(RFigureCore,QtWidgets.QWidget):
             else:
                 self.editor_python.document().setModified(False)
                 self.editor_commentaries.document().setModified(False)
+                self.table_variables.setModified(False)
                 return True
         return False
 
@@ -265,6 +266,7 @@ class RFigureGui(RFigureCore,QtWidgets.QWidget):
         self.editor_commentaries.setText(self.commentaries)
         self.editor_python.document().setModified(False)
         self.editor_commentaries.document().setModified(False)
+        self.table_variables.setModified(False)
         # self.lineEdit_filename.setText(self.filename)
 
 
@@ -306,7 +308,7 @@ class RFigureGui(RFigureCore,QtWidgets.QWidget):
             True if the instructions or commentaries have been modified since
             last save.
         """
-        return self.editor_commentaries.document().isModified() or self.editor_python.document().isModified()
+        return self.editor_commentaries.document().isModified() or self.editor_python.document().isModified() or self.table_variables.isModified()
 
 
 class RFigureMainWindow(QtWidgets.QMainWindow):
@@ -580,7 +582,6 @@ class TableVariables(QtWidgets.QTableWidget):
     This widget is a re-implementation of the QTableWidget. It deals with
     the variables that have to be saved with the figure.
     """
-
     def __init__(self,saveFigureGui,list_var=None):
         if list_var==None: list_var=[]
         QtWidgets.QTableWidget.__init__ (self, len(list_var), 3)
@@ -588,12 +589,20 @@ class TableVariables(QtWidgets.QTableWidget):
         self.setHorizontalHeaderLabels(["Name","Type","Size"])
         self.saveFigureGui=saveFigureGui
         self.itemChanged.connect(self.changeVarName)
+        self.modified = False
+
+    def setModified(self,b):
+        self.modified = b
+
+    def isModified(self):
+        return self.modified
 
     def changeVarName(self,item):
         print('coucou')
         old_k = self.keysList[item.row()]
         #TODO check it is a good format for a variable name
         new_k = item.text().strip()
+        changed = False
         if old_k==new_k:
             pass
         elif str(new_k) in self.saveFigureGui.dict_variables:
@@ -609,9 +618,12 @@ class TableVariables(QtWidgets.QTableWidget):
             if (res == QtWidgets.QMessageBox.Yes):
                 v = self.saveFigureGui.dict_variables.pop(old_k)
                 self.saveFigureGui.dict_variables[new_k] = v
+                changed = True
                 #TODO set saveAction  enable TRue
         self.updateFromDict()
-
+        if changed:
+            self.modified = True
+            self.saveFigureGui.editor_python.textChanged.emit()
         #     msg = "How rename the variable <"+self.item(row,0).text()+">?"
         #     res = QtWidgets.QInputDialog.getText(self, "Rename variable",msg,text =old_k)
         #
@@ -625,20 +637,22 @@ class TableVariables(QtWidgets.QTableWidget):
         #             self.updateFromDict()
         #        # self.connect(SIGNAL(returnPressed()),ui->homeLoginButton,SIGNAL(clicked()))
 
-    # def keyPressEvent(self,event):
+    def keyPressEvent(self,event):
+        if event.key()==QtCore.Qt.Key_Delete:
+            self.deleteItem(self.currentRow ())
+        elif event.key()==QtCore.Qt.Key_F2:
+            self.editItem(self.item(self.currentRow(),0))
+        else:
+            QtWidgets.QTableWidget.keyPressEvent(self,event)
 
-    #     if event.key()==QtCore.Qt.Key_Delete:
-    #         self.deleteItem(self.currentRow ())
-    #     if event.key()==QtCore.Qt.Key_F2:
-    #         self.renameItem(self.currentRow ())
-
-
-    # def deleteItem(self,row):
-    #     msg = "Are you sure you want to delete the variable <"+self.item(row,0).text()+">?"
-    #     res = QtWidgets.QMessageBox.question (self, "Delete variable", msg,QtWidgets.QMessageBox.Yes | QtWidgets.QMessageBox.Cancel)
-    #     if (res == QtWidgets.QMessageBox.Yes):
-    #         self.saveFigureGui.dict_variables.pop(str(self.item(row,0).text()))
-    #         self.updateFromDict()
+    def deleteItem(self,row):
+        msg = "Are you sure you want to delete the variable `%s`?"%self.item(row,0).text()
+        res = QtWidgets.QMessageBox.question (self, "Delete variable", msg,QtWidgets.QMessageBox.Yes | QtWidgets.QMessageBox.Cancel)
+        if (res == QtWidgets.QMessageBox.Yes):
+            self.saveFigureGui.dict_variables.pop(str(self.item(row,0).text()))
+            self.updateFromDict()
+            self.modified = True
+            self.saveFigureGui.editor_python.textChanged.emit()
     #
     # def renameItem(self,row):
     #     old_k = str(self.item(row,0).text())
