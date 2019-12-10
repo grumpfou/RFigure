@@ -259,8 +259,8 @@ class RFigureGui(RFigureCore,QtWidgets.QWidget):
         `self.dict_variables` in the graphical interface.
         """
         self.table_variables.setRowCount(len(self.dict_variables))
-        for i,k in enumerate(self.dict_variables.keys()):
-            self.table_variables.setItem(i,0,QtWidgets.QTableWidgetItem(k))
+        # for i,k in enumerate(self.dict_variables.keys()):
+        #     self.table_variables.setItem(i,0,QtWidgets.QTableWidgetItem(k))
         self.table_variables.updateFromDict()
         self.editor_python.setPlainText(self.instructions)
         self.editor_commentaries.setText(self.commentaries)
@@ -598,7 +598,11 @@ class TableVariables(QtWidgets.QTableWidget):
         return self.modified
 
     def changeVarName(self,item):
-        print('coucou')
+        if item.column()>0:
+            print('Warning: Something is wrong, we should not be able to change this column')
+            return False
+        print('coucou1',item.row(),item.column())
+
         old_k = self.keysList[item.row()]
         #TODO check it is a good format for a variable name
         new_k = item.text().strip()
@@ -606,7 +610,7 @@ class TableVariables(QtWidgets.QTableWidget):
         if old_k==new_k:
             pass
         elif str(new_k) in self.saveFigureGui.dict_variables:
-            msg = "The name of the variable `"+str(new_k)+"` is allready used."
+            msg = "The name of the variable `"+str(new_k)+"` is already used."
             res = QtWidgets.QMessageBox.critical(self, "Rename variable", msg)
         elif not re.match('^[a-zA-Z_][a-zA-Z0-9]*$',new_k):
             msg = "The name of the variable `"+str(new_k)+"` is not a correct variable name"
@@ -710,7 +714,7 @@ class TableVariables(QtWidgets.QTableWidget):
             item.setFlags(QtCore.Qt.ItemIsSelectable|QtCore.Qt.ItemIsEnabled);
             self.setItem(i,2,item)
             self.keysList= keys
-            self.blockSignals(False)
+        self.blockSignals(False)
 
 class EmittingStream(QtCore.QObject):
 
