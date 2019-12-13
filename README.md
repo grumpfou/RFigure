@@ -150,6 +150,7 @@ than will be send to the function `matplotlib.figure.Figure.savefig` when
 saving the file. For instance, these instructions will save the figure with a
 black background:
 ```
+> gca().patch.set_alpha(0)
 > X=arange(0,10,0.1)
 > plot(X,cos(X),color='w',lw=3)
 > RFIG_savefig_kargs = dict(facecolor='k')
