@@ -158,6 +158,7 @@ class RFigureCore:
         exec_instructions(instructions_header_local,path_to_header_local,globals_)
         globals_.update(self.dict_variables.copy())
         exec_instructions(self.instructions,'RFigureInstructions',globals_)
+        return globals_
 
     def show(self,print_errors=False):
         """ Method that execute the code instructions and adds the
@@ -243,8 +244,15 @@ class RFigureCore:
         if fig_type not in self.fig_type_list and not (fig_type is None):
             raise ValueError('fig_type should be in '+str(self.fig_type_list))
         matplotlib.pyplot.ion()
-        # self.show()
-        self.execute()
+
+        globals_ = self.execute()
+
+        # `RFIG_savefig_kargs` is a dict that contains the possible kargs to
+        # add when using `matplotlib.figure.Figure.savefig(...,**kargs)`
+        if 'RFIG_savefig_kargs' in globals_:
+            RFIG_savefig_kargs = globals_['RFIG_savefig_kargs']
+        else:
+            RFIG_savefig_kargs = dict()
 
         # we make the list of all the figures
         figures=[manager.canvas.figure for manager in \
@@ -261,18 +269,20 @@ class RFigureCore:
                 for i,fig in enumerate(figures):
                     nb='_'+str(i).zfill(int(to_zfill))
                     f = fig_path+nb+'.'+fig_type
-                    fig.savefig(f,bbox_inches='tight')
+                    fig.savefig(f,bbox_inches='tight',**RFIG_savefig_kargs)
                     paths.append(f)
             elif len(figures)>0:
                 f = fig_path+'.'+fig_type
-                figures[0].savefig(fig_path+'.'+fig_type,bbox_inches='tight')
+                figures[0].savefig(fig_path+'.'+fig_type,bbox_inches='tight',
+                                                        **RFIG_savefig_kargs)
                 paths.append(f)
         elif fig_type=='pdf':
             fig_path,_ = os.path.splitext(fig_path)
             fig_path += '.'+fig_type
             pp = PdfPages(fig_path)
             for fig in figures:
-                pp.savefig(fig,bbox_inches='tight',transparent=True)
+                # pp.savefig(fig,bbox_inches='tight',transparent=True)
+                pp.savefig(fig,bbox_inches='tight',**RFIG_savefig_kargs)
             pp.close()
             paths.append(fig_path)
         matplotlib.pyplot.close('all')
