@@ -126,9 +126,9 @@ gui interface) will format the name of the figure as Figure_YYYYMMDD_foo.rfig3
     - `Ctrl+↓` will move line(s) down
     - `Ctrl+Shift+D` will duplicate the line(s)
     - `Ctrl+Shift+K` will delete the line(s)
-- SF_INSTRUCTIONS command: (deprecated, use the magic function `%%rfig_save` instead) when the instructions in input contained at some
+- `# RFIG_start_instructions` command: (deprecated, use the magic function `%%rfig_save` instead) when the instructions in input contained at some
 point the line
-> \#! SF_INSTRUCTIONS
+> \# RFIG_start_instructions
 
 the program considers the instructions begin only at this point. It is useful
 when using it with a Jupyter notebook:
@@ -138,11 +138,23 @@ In[]:
 > d=dict(X=X)
 > rf = RFigure3.RFigureCore(i=In[-1],d=d)
 > rf.save(filepath='./Test.rfig3')
-> #! SF_INSTRUCTIONS
+> # RFIG_start_instructions
 > X=arange(0,10,0.1)
 > plot(X,cos(X))
 ```
 Will save figure whose instructions are the last lines of the cell.
+
+- The dictionary `RFIG_savefig_kargs`: by creating a dictionary
+`RFIG_savefig_kargs` in the instricutions, we are able to manage the arguments
+than will be send to the function `matplotlib.figure.Figure.savefig` when
+saving the file. For instance, these instructions will save the figure with a
+black background:
+```
+> X=arange(0,10,0.1)
+> plot(X,cos(X),color='w',lw=3)
+> RFIG_savefig_kargs = dict(facecolor='k')
+```
+
 
 ## FAQ
 

@@ -45,7 +45,7 @@ class RFigureCore:
     fig_type_list=['eps','pdf','png']
     def __init__(self,
             d=None,i=None,c=None,
-            file_split="#! SF_INSTRUCTIONS",
+            file_split="# RFIG_start_instructions",
             filepath=None):
         """
         This function will save the figure into a propper way, in order to open
