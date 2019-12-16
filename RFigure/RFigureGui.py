@@ -386,7 +386,7 @@ class RFigureMainWindow(QtWidgets.QMainWindow):
         toolbar.setToolButtonStyle(QtCore.Qt.ToolButtonTextBesideIcon)
 
         self.setWindowTitle('RFigureGui %s : Save matplotlib figure'%__version__)
-        self.setWindowIcon(QtGui.QIcon(os.path.join(file_dir,'images','logo.png')))
+        self.setWindowIcon(QtGui.QIcon(os.path.join(file_dir,'images','logo_new.png')))
 
         wid_layout = QtWidgets.QHBoxLayout()
         wid_layout.addWidget(QtWidgets.QLabel("File path:"))
@@ -733,7 +733,7 @@ else:
 
 def main(argv=None):
     if argv is None: argv = sys.argv
-    iconpath = os.path.join(os.path.split(__file__)[0],'logo.png')
+    iconpath = os.path.join(os.path.split(__file__)[0],'logo_new.png')
     app.setWindowIcon(QtGui.QIcon(iconpath))
 
     if len(argv)>1:
