@@ -42,7 +42,7 @@ class RFigureCore:
     """
     CURDATE = None # you can reassign CURDATE to the date by default (something like `'20191031'` )
     ext = '.rfig3'
-    fig_type_list=['eps','pdf','png']
+    fig_type_list=['eps','pdf','png','svg']
     def __init__(self,
             d=None,i=None,c=None,
             file_split="# RFIG_start_instructions",
@@ -259,7 +259,7 @@ class RFigureCore:
                     matplotlib._pylab_helpers.Gcf.get_all_fig_managers()]
 
         paths = []
-        if fig_type=='png' or fig_type=='eps':
+        if fig_type in {'png','eps','svg'}:
             fig_path,_ = os.path.splitext(fig_path)
 
             # if there is more than one figure, we will save under the names :

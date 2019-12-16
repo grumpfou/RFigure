@@ -126,7 +126,7 @@ class RFigureGui(RFigureCore,QtWidgets.QWidget):
     def save(self,filepath=None):
         """
         The saving function called by the `Save` button.
-        Ask for confirmation and automotically save the image (png,pdf or eps)
+        Ask for confirmation and automotically save the image (%s)
         at the same time.
 
         Paramters
@@ -181,7 +181,7 @@ class RFigureGui(RFigureCore,QtWidgets.QWidget):
                 self.table_variables.setModified(False)
                 return True
         return False
-
+    save.__doc__ = save.__doc__%(' '.join(RFigureCore.fig_type_list))
 
     def exportFig(self,filepath,**kargs):
         fig_type = [k for k in self.checkBoxDict if
@@ -616,7 +616,7 @@ class TableVariables(QtWidgets.QTableWidget):
             msg = "The name of the variable `"+str(new_k)+"` is not a correct variable name"
             res = QtWidgets.QMessageBox.critical(self, "Rename variable", msg)
         else:
-            msg = "Do you whant to rename the variable `%s` in `%s`?"%(old_k,new_k)
+            msg = "Do you want to rename the variable `%s` in `%s`?"%(old_k,new_k)
             res = QtWidgets.QMessageBox.question (self, "Rename Variable", msg,
                     QtWidgets.QMessageBox.Yes | QtWidgets.QMessageBox.Cancel)
             if (res == QtWidgets.QMessageBox.Yes):
