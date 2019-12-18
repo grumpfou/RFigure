@@ -86,7 +86,7 @@ class RFigureGui(RFigureCore,QtWidgets.QWidget):
         button_clAll = QtWidgets.QPushButton('Close All')
 
         self.checkBoxDict = {k:QtWidgets.QCheckBox(k, self) for k in self.fig_type_list}
-        self.checkBoxDict['pdf'].setChecked(True)
+        self.checkBoxDict[self.fig_type_list[0]].setChecked(True)
 
 
         splitter = QtWidgets.QSplitter(self)
@@ -423,6 +423,17 @@ class RFigureMainWindow(QtWidgets.QMainWindow):
         self.lineEdit_filepath.setText(filepath)
         self.actionSave.setEnabled(False)
 
+        # We look if there is other files in '.pdf', '.png', etc. with the same
+        # name in the sem folder. If so, we check the corresponding boxes,
+        # otherwise, we only check 'pdf'.
+        ff = os.path.splitext(filepath)[0]
+        set_ext = set(filter(lambda e:os.path.exists(ff+'.'+e),
+                                            self.rFigureWidget.fig_type_list))
+        if len(set_ext)==0:
+            set_ext = [self.rFigureWidget.fig_type_list[0]]
+        for e in self.rFigureWidget.fig_type_list:
+            self.rFigureWidget.checkBoxDict[e].setChecked((e in set_ext))
+
 
     @QtCore.pyqtSlot()
     def slotSave(self,filepath=None):
@@ -498,7 +509,7 @@ class RFigureMainWindow(QtWidgets.QMainWindow):
     def slotAbout(self):
         text = (
           "<p>RFigure is a software dedicated to the edition of figures using "
-          "Python and Matplotlib. I is mainly written by Renaud Dessalles "
+          "Python and Matplotlib. It is mainly written by Renaud Dessalles "
           "(Grumpfou) and distributed under the licence GNU General Public "
           "License v3.0 (unless some part of the code when specified otherwise, "
           "written by somebody else)</p>\n\n"

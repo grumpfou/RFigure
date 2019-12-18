@@ -42,7 +42,7 @@ class RFigureCore:
     """
     CURDATE = None # you can reassign CURDATE to the date by default (something like `'20191031'` )
     ext = '.rfig3'
-    fig_type_list=['eps','pdf','png','svg']
+    fig_type_list=['pdf','eps','png','svg']
     def __init__(self,
             d=None,i=None,c=None,
             file_split="# RFIG_start_instructions",
