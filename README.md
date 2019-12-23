@@ -126,6 +126,7 @@ gui interface) will format the name of the figure as Figure_YYYYMMDD_foo.rfig3
     - `Ctrl+↓` will move line(s) down
     - `Ctrl+Shift+D` will duplicate the line(s)
     - `Ctrl+Shift+K` will delete the line(s)
+    - `Ctrl+J` reshape the selected line(s) in one single line
 - `# RFIG_start_instructions` command: (deprecated, use the magic function `%%rfig_save` instead) when the instructions in input contained at some
 point the line
 > \# RFIG_start_instructions

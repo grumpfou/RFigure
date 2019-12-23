@@ -105,6 +105,7 @@ class RPythonEditor(QtWidgets.QPlainTextEdit):
         self.actionDuplicateLine    = QtWidgets.QAction("Duplicate Line",self)
         self.actionMoveLineUp    = QtWidgets.QAction("Move Line Up",self)
         self.actionMoveLineDown    = QtWidgets.QAction("Move Line Down",self)
+        self.actionReshapeOneLine    = QtWidgets.QAction("Reshape in one line",self)
 
 
         self.addAction(self.actionCommentDecomment)
@@ -112,18 +113,21 @@ class RPythonEditor(QtWidgets.QPlainTextEdit):
         self.addAction(self.actionDuplicateLine)
         self.addAction(self.actionMoveLineUp)
         self.addAction(self.actionMoveLineDown)
+        self.addAction(self.actionReshapeOneLine)
 
         self.actionCommentDecomment.setShortcuts(QtGui.QKeySequence("Ctrl+/"))
         self.actionDeleteLine.setShortcuts(QtGui.QKeySequence("Ctrl+Shift+K"))
         self.actionDuplicateLine.setShortcuts(QtGui.QKeySequence("Ctrl+Shift+D"))
         self.actionMoveLineUp.setShortcuts(QtGui.QKeySequence("Ctrl+Up"))
         self.actionMoveLineDown.setShortcuts(QtGui.QKeySequence("Ctrl+Down"))
+        self.actionReshapeOneLine.setShortcuts(QtGui.QKeySequence("Ctrl+J"))
 
-        self.actionCommentDecomment    .triggered.connect(self.SLOT_actionCommentDecomment)
-        self.actionDeleteLine        .triggered.connect(self.SLOT_actionDeleteLine)
+        self.actionCommentDecomment .triggered.connect(self.SLOT_actionCommentDecomment)
+        self.actionDeleteLine       .triggered.connect(self.SLOT_actionDeleteLine)
         self.actionDuplicateLine    .triggered.connect(self.SLOT_actionDuplicateLine)
-        self.actionMoveLineUp        .triggered.connect(self.SLOT_actionMoveLineUp)
-        self.actionMoveLineDown        .triggered.connect(self.SLOT_actionMoveLineDown)
+        self.actionMoveLineUp       .triggered.connect(self.SLOT_actionMoveLineUp)
+        self.actionMoveLineDown     .triggered.connect(self.SLOT_actionMoveLineDown)
+        self.actionReshapeOneLine   .triggered.connect(self.SLOT_actionReshapeOneLine)
 
         self.blockCountChanged.connect(self.updateLineNumberAreaWidth)
         self.updateRequest.connect(self.updateLineNumberArea)
@@ -215,9 +219,29 @@ class RPythonEditor(QtWidgets.QPlainTextEdit):
         # cur.select(QtGui.QTextCursor.BlockUnderCursor)
         self.setTextCursor(cur)
         self.cut()
+        cur.movePosition(QtGui.QTextCursor.Right)
+        self.setTextCursor(cur)
         cur.endEditBlock()
         # if cur.atEnd():
         # cur.deleteChar()
+
+    def SLOT_actionReshapeOneLine(self):
+        cur = self.textCursor()
+        cur.beginEditBlock()
+        for i,bl in enumerate( cur.yieldBlockInSelection(direction=-1)):
+            cur.setPosition(bl.position())
+            cur.movePosition(QtGui.QTextCursor.EndOfBlock)
+            cur.deleteChar()
+
+            charAt = lambda x: str(self.document().characterAt(x))
+            while (not cur.atBlockEnd()) and charAt(cur.position()) in [' ','\t']:
+                cur.deleteChar()
+
+            if not cur.atBlockEnd():
+                cur.insertText(' ')
+        cur.movePosition(QtGui.QTextCursor.EndOfBlock)
+        self.setTextCursor(cur)
+        cur.endEditBlock()
 
     def SLOT_actionDuplicateLine(self):
         cur = self.textCursor()
