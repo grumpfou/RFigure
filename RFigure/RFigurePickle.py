@@ -1,4 +1,3 @@
-                                                                                                                                                                                                                                                                    # unicode in np.ndarray
 from __future__ import absolute_import, division, print_function,unicode_literals
 import os,gzip
 import subprocess
@@ -42,6 +41,8 @@ if has_numpy:
     authorized_types += [numpy.ndarray,numpy.dtype]
     authorized_types += [numpy.int8,numpy.int16,numpy.int32,numpy.int64]
     authorized_types += [numpy.float16,numpy.float32,numpy.float64]
+    authorized_types += [numpy.complex,numpy.complex64,numpy.complex128]
+    authorized_types += [numpy.datetime64,numpy.timedelta64]
 
 if has_pandas:
     authorized_types.append(pandas.core.frame.DataFrame)
