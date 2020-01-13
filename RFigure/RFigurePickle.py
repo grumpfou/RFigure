@@ -2,6 +2,7 @@ from __future__ import absolute_import, division, print_function,unicode_literal
 import os,gzip
 import subprocess
 import random
+from .RFigureMisc import decoDocFormating
 # import numpy as np
 
 __version__ = "2.1"
@@ -111,6 +112,7 @@ def save(objects,filepath,commentaries="",version=None,ext='.rpk2'):
 
     os.rename(filepath_tmp,filepath)
 
+@decoDocFormating(str(authorized_types))
 def object_to_txt(objects,imports):
     """Function that will transform any object in its string version
 
@@ -152,7 +154,6 @@ def object_to_txt(objects,imports):
     else:
         res += repr(objects)
     return res
-object_to_txt.__doc__ = object_to_txt.__doc__%(str(authorized_types))
 
 def load(filepath):
     """ Load the RPickle file of filepath

@@ -1,5 +1,6 @@
 from . import RFigureCore
 from . import RFigurePickle
+from . import RFigureMisc
 import os,re,sys,argparse,shlex,textwrap
 import numpy as np
 from IPython.core.magic import  (Magics, magics_class, line_magic,
@@ -161,6 +162,7 @@ class RFigureMagics(Magics):
         help="Path of the file.",
         nargs='?')
 
+    @RFigureMisc.decoSetDoc(parser_save.format_help())
     @cell_magic
     def rfig_save(self,line,cell):
         args = self.parser_save.parse_args(shlex.split(line))
@@ -194,7 +196,6 @@ class RFigureMagics(Magics):
         if args.format_name:
             rf.formatName()
         rf.save(fig_type=args.fig_type)
-    rfig_save.__doc__ = parser_save.format_help()
 
 
     epilog_list_var = """
@@ -229,6 +230,7 @@ class RFigureMagics(Magics):
                 "variables detected in the cell. If none is given, only prints "
                 "its keys.",
         nargs='?')
+    @RFigureMisc.decoSetDoc(parser_list_var.format_help())
     @cell_magic
     def rfig_list_var(self,line,cell):
         args = self.parser_list_var.parse_args(shlex.split(line))
@@ -240,10 +242,8 @@ class RFigureMagics(Magics):
         if not args.dict_variable is None:
             print("args.dict_variable[0]",args.dict_variable)
             self.shell.user_ns.update({args.dict_variable:d})
-    rfig_list_var.__doc__ = parser_list_var.format_help()
 
-    epilog_load = ""
-    """
+    epilog_load = """
                 Examples
                 --------
                 (in IPython/Jupyter)
@@ -287,6 +287,7 @@ class RFigureMagics(Magics):
     parser_load.add_argument("filepath",
         help="Path of the file to open.",
         nargs='?')
+    @RFigureMisc.decoSetDoc(parser_load.format_help())
     @line_magic
     def rfig_load(self,line):
         """ Magic function to open an existing rfigure and import the
@@ -322,7 +323,6 @@ class RFigureMagics(Magics):
         if not args.c is None:
             self.shell.user_ns.update({args.c[0]: rf.commentaries})
         # self.shell.user_ns.update(...)
-    rfig_load.__doc__ = parser_load.format_help()
 
     @line_magic
     def rfig_curdate(self,line):

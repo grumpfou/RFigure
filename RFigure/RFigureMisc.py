@@ -70,3 +70,43 @@ def RTextWrap(text,nb=79,sep='\n',begin="") :
         subsequent_indent = begin) for f in l]
     if sep == '\n': sep += begin
     return (sep+begin).join(ll)
+
+def decoSetDoc(doc):
+    """ Function dedicated to be used as a decorator that set the documentation
+     `doc` to the function `func`.
+
+    Parameters
+    ----------
+    func : fonction
+        the function to set the documentation to
+    doc : str
+        the documentation to attach to the function
+
+    Returns
+    -------
+    func : fonction
+        the function with the given documentation
+    """
+    def function_deco(func):
+        func.__doc__=doc
+        return func
+    return function_deco
+
+def decoDocFormating(*args):
+    """ Decorator that will format the documentation of the function by using
+    the formating like `doc%args`
+
+    Parameters
+    ----------
+    args : objects
+        the argument to put in the formating
+
+    Returns
+    -------
+    func : fonction
+        the function with the correct documentation
+    """
+    def function_deco(func):
+        func.__doc__ = func.__doc__%args
+        return func
+    return function_deco

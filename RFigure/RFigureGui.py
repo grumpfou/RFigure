@@ -19,7 +19,7 @@ import tempfile
 import re
 import traceback
 import sys
-from .RFigureMisc import  RTextWrap
+from .RFigureMisc import  RTextWrap,decoDocFormating
 from PyQt5 import QtGui, QtCore,QtWidgets
 from .REditors import RPythonEditor,RMarkdownEditor
 from matplotlib.backends.backend_pdf import PdfPages
@@ -123,6 +123,7 @@ class RFigureGui(RFigureCore,QtWidgets.QWidget):
         # Restore sys.stdout
         sys.stdout = sys.__stdout__
 
+    @decoDocFormating(RFigureCore.fig_type_list)
     def save(self,filepath=None):
         """
         The saving function called by the `Save` button.
@@ -181,7 +182,6 @@ class RFigureGui(RFigureCore,QtWidgets.QWidget):
                 self.table_variables.setModified(False)
                 return True
         return False
-    save.__doc__ = save.__doc__%(' '.join(RFigureCore.fig_type_list))
 
     def exportFig(self,filepath,**kargs):
         fig_type = [k for k in self.checkBoxDict if

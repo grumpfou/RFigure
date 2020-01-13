@@ -22,7 +22,7 @@ import re
 import traceback
 import sys
 from . import RFigurePickle
-from .RFigureMisc import RDateDisplay, RTextWrap
+from .RFigureMisc import RDateDisplay, RTextWrap,decoDocFormating
 from matplotlib.backends.backend_pdf import PdfPages
 
 __version__ = '3'
@@ -173,7 +173,7 @@ class RFigureCore:
         self.execute(print_errors=print_errors)
         matplotlib.pyplot.show()
 
-
+    @decoDocFormating(fig_type_list)
     def save(self,filepath=None,fig_type=None,check_ext=True):
         """
         Will save the figure in a rfig file.
@@ -213,8 +213,8 @@ class RFigureCore:
             paths += paths1
         self.filepath = filepath
         return paths
-    save.__doc__ = save.__doc__%str(fig_type_list)
 
+    @decoDocFormating(fig_type_list)
     def savefig(self,fig_path,fig_type='png'):
         """Method that will save the figure with the corresponding extention.
 
@@ -289,7 +289,6 @@ class RFigureCore:
         matplotlib.pyplot.ioff()
         print ("========== END SAVE =========")
         return paths
-    savefig.__doc__ = savefig.__doc__%str(fig_type_list)
 
     def clean_instructions(self):
         """Ensure that the instruction are idented at the the first level.
