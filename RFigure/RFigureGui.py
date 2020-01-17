@@ -414,7 +414,9 @@ class RFigureMainWindow(QtWidgets.QMainWindow):
         filepath : str
             The file path to open. If None, ask the user which file to open.
         """
-        self.checkBeforeClose()
+        res = self.checkBeforeClose()
+        if not((res == QtWidgets.QMessageBox.Yes) or (res == QtWidgets.QMessageBox.No)):
+            return False
         if filepath is None:
             filepath = QtWidgets.QFileDialog().getOpenFileName(self)[0]
             if not filepath:
