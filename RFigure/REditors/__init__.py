@@ -157,7 +157,8 @@ class RPythonEditor(QtWidgets.QPlainTextEdit):
                 prev_text = cur.block().previous().text()
                 i = 0
                 while i<len(prev_text) and prev_text[i]=='\t' : i+=1
-                if len(prev_text)>0 and prev_text.strip()[-1]==':': i+=1
+                prev_text = prev_text.split('#')[0].strip()
+                if len(prev_text)>0 and prev_text[-1]==':': i+=1
                 cur.insertText('\t'*i)
 
         elif e.text() in self.delimiters:
