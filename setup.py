@@ -1,4 +1,14 @@
 from setuptools import setup, find_packages
+import platform
+
+if platform.system()[0]=='Windows':
+    install_requires = ["numpy", "matplotlib", "pyqt5"]
+    isWin = True
+else:
+    install_requires = ["numpy", "matplotlib"]
+    isWin = False
+
+
 
 setup(name='rfigure',
       version='3.0',
@@ -19,7 +29,7 @@ setup(name='rfigure',
       license='GPL-3.0',
       packages=find_packages(),
       package_data = {'RFigure':['images/*.png']},
-      install_requires=["numpy", "matplotlib", "pyqt5"],
+      install_requires=install_requires,
       include_package_data=True,
       # entry_points={
       #           'gui_scripts': ['rfigt = bin/rfig'],
@@ -35,3 +45,6 @@ setup(name='rfigure',
               ]
       },
 zip_safe=False)
+if not isWin:
+    print('IMPORTANT: Since you are not in Windows, you will need to install PyQt5 by hand. Try something like \n'
+          'mylogin:$ sudo apt-get install python-qt5')

@@ -346,7 +346,10 @@ class RFigureMagics(Magics):
         ... # Will save in the file `Figure_19990909_Test.rfig3`
         ... plt.plot(np.arange(10),np.arange(10))
         """
-        RFigureCore.CURDATE = line.strip()
+        line = line.strip()
+        assert  re.match('^[0-9]{8}$',line),'Use a date under the format YYYYMMDD'
+        RFigureCore.CURDATE = line
+
 
 def load_ipython_extension(ipython):
     ipython.register_magics(RFigureMagics)
