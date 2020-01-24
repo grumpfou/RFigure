@@ -19,6 +19,8 @@ somebody else). It is written in Python 3.6.6.
 
 ## Install
 
+### Install on Windows
+
 In a terminal, go in the same folder in which the sources have been installed, and use the following command lines:
 
 ```
@@ -28,6 +30,22 @@ pip install .
 Alternately, you can explicitly save in you user directories using:
 ```
 pip install --user .
+```
+
+### Install on Ubuntu
+
+In this case, you will need to install PyQt5 separately. To do so, in a
+terminal, go in the same folder in which the sources have been installed, and
+use the following command lines:
+```
+pip3 install .
+sudo apt-get install python-qt5
+```
+
+Alternately, you can explicitly save in you user directories using:
+```
+pip3 install --user .
+sudo apt-get install python-qt5
 ```
 
 **Note:** It is possible that by using the `--user` option, the script
