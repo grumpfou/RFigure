@@ -22,7 +22,6 @@ import sys
 from .RFigureMisc import  RTextWrap,decoDocFormating
 from PyQt5 import QtGui, QtCore,QtWidgets
 from .REditors import RPythonEditor,RMarkdownEditor
-from matplotlib.backends.backend_pdf import PdfPages
 from .RFigureCore import RFigureCore,__version__
 
 ###################### CONFIG IMPORTATION ##############################

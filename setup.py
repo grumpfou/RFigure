@@ -5,10 +5,8 @@ if platform.system()[0]=='Windows':
     install_requires = ["numpy", "matplotlib", "pyqt5"]
     isWin = True
 else:
-    install_requires = ["numpy", "matplotlib"]
+    install_requires = ["numpy", "matplotlib",'pyqt5==5.14.0']
     isWin = False
-
-dsfdsf
 
 setup(name='rfigure',
       version='3.0',
@@ -45,6 +43,6 @@ setup(name='rfigure',
               ]
       },
 zip_safe=False)
-if not isWin:
-    print('IMPORTANT: Since you are not in Windows, you will need to install PyQt5 by hand. Try something like \n'
-          'mylogin:$ sudo apt-get install python-qt5')
+# if not isWin:
+#     print('IMPORTANT: Since you are not in Windows, you will need to install PyQt5 by hand. Try something like \n'
+#           'mylogin:$ sudo apt-get install python-qt5')
