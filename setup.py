@@ -1,7 +1,7 @@
 from setuptools import setup, find_packages
 import platform
 
-if platform.system()[0]=='Windows':
+if platform.system()=='Windows':
     install_requires = ["numpy", "matplotlib", "pyqt5"]
     isWin = True
 else:

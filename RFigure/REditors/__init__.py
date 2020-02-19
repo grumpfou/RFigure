@@ -1,5 +1,7 @@
 # PYTHON 3
 from PyQt5 import QtGui,QtCore,QtWidgets
+from .findReplace import FindReplaceDialog
+
 import sys
 if __name__=='__main__':
     import syntax
@@ -98,6 +100,8 @@ class RPythonEditor(QtWidgets.QPlainTextEdit):
         self.setup_connections()
 
         self.updateLineNumberAreaWidth(0)
+        self.findDialog =  FindReplaceDialog(textedit=self)
+
     def setup_connections(self):
         # actions
         self.actionCommentDecomment    = QtWidgets.QAction("Comment/Decomment",self)
@@ -106,7 +110,9 @@ class RPythonEditor(QtWidgets.QPlainTextEdit):
         self.actionMoveLineUp    = QtWidgets.QAction("Move Line Up",self)
         self.actionMoveLineDown    = QtWidgets.QAction("Move Line Down",self)
         self.actionReshapeOneLine    = QtWidgets.QAction("Reshape in one line",self)
-
+        self.actionLaunchFindDialog    = QtWidgets.QAction("Open the search dialog",self)
+        self.actionFindNext    = QtWidgets.QAction("Search Next",self)
+        self.actionFindPrevious    = QtWidgets.QAction("Search Previous",self)
 
         self.addAction(self.actionCommentDecomment)
         self.addAction(self.actionDeleteLine)
@@ -114,6 +120,9 @@ class RPythonEditor(QtWidgets.QPlainTextEdit):
         self.addAction(self.actionMoveLineUp)
         self.addAction(self.actionMoveLineDown)
         self.addAction(self.actionReshapeOneLine)
+        self.addAction(self.actionLaunchFindDialog)
+        self.addAction(self.actionFindNext)
+        self.addAction(self.actionFindPrevious)
 
         self.actionCommentDecomment.setShortcuts(QtGui.QKeySequence("Ctrl+/"))
         self.actionDeleteLine.setShortcuts(QtGui.QKeySequence("Ctrl+Shift+K"))
@@ -121,6 +130,9 @@ class RPythonEditor(QtWidgets.QPlainTextEdit):
         self.actionMoveLineUp.setShortcuts(QtGui.QKeySequence("Ctrl+Up"))
         self.actionMoveLineDown.setShortcuts(QtGui.QKeySequence("Ctrl+Down"))
         self.actionReshapeOneLine.setShortcuts(QtGui.QKeySequence("Ctrl+J"))
+        self.actionLaunchFindDialog.setShortcuts(QtGui.QKeySequence("Ctrl+F"))
+        self.actionFindNext.setShortcuts(QtGui.QKeySequence.FindNext)
+        self.actionFindPrevious.setShortcuts(QtGui.QKeySequence.FindPrevious)
 
         self.actionCommentDecomment .triggered.connect(self.SLOT_actionCommentDecomment)
         self.actionDeleteLine       .triggered.connect(self.SLOT_actionDeleteLine)
@@ -128,6 +140,9 @@ class RPythonEditor(QtWidgets.QPlainTextEdit):
         self.actionMoveLineUp       .triggered.connect(self.SLOT_actionMoveLineUp)
         self.actionMoveLineDown     .triggered.connect(self.SLOT_actionMoveLineDown)
         self.actionReshapeOneLine   .triggered.connect(self.SLOT_actionReshapeOneLine)
+        self.actionLaunchFindDialog .triggered.connect(self.SLOT_actionLaunchFindDialog)
+        self.actionFindNext         .triggered.connect(lambda : self.findDialog.SLOT_find(loop=True))
+        self.actionFindPrevious     .triggered.connect(lambda : self.findDialog.SLOT_find(loop=True,reverse=True))
 
         self.blockCountChanged.connect(self.updateLineNumberAreaWidth)
         self.updateRequest.connect(self.updateLineNumberArea)
@@ -243,6 +258,11 @@ class RPythonEditor(QtWidgets.QPlainTextEdit):
         cur.movePosition(QtGui.QTextCursor.EndOfBlock)
         self.setTextCursor(cur)
         cur.endEditBlock()
+
+    def SLOT_actionLaunchFindDialog(self):
+        """Slot that is called when we have to display the search dialog
+        window."""
+        self.findDialog.setVisible(True)
 
     def SLOT_actionDuplicateLine(self):
         cur = self.textCursor()
