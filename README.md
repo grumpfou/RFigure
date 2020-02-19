@@ -19,7 +19,7 @@ somebody else). It is written in Python 3.6.6.
 
 ## Install
 
-### Install on Windows
+### Install on all versions
 
 In a terminal, go in the same folder in which the sources have been installed, and use the following command lines:
 
@@ -32,23 +32,20 @@ Alternately, you can explicitly save in you user directories using:
 pip install --user .
 ```
 
-### Install on Ubuntu
+### Notes on Ubuntu
 
-In this case, you will need to install PyQt5 separately. To do so, in a
-terminal, go in the same folder in which the sources have been installed, and
-use the following command lines:
+#### The library PyQt5
+
+There is sometimes troubles installing PyQt5. You might have to download PtQt5
+independently using the  `apt-get` program before installing the RFigure
+library:
 ```
+sudo apt-get install python-qt5
 pip3 install .
-sudo apt-get install python-qt5
 ```
 
-Alternately, you can explicitly save in you user directories using:
-```
-pip3 install --user .
-sudo apt-get install python-qt5
-```
-
-**Note:** It is possible that by using the `--user` option, the script
+#### The firectory of the **rfig** program into PATH
+It is possible that by using the `--user` option, the script
 **rfig** is not saved in a directory which is in the environment variable
 "PATH". In that case, be sure to add the directory that contains *rfig**
 (usually `~/.local/bin/`) to "PATH" manually (see
@@ -145,6 +142,9 @@ gui interface) will format the name of the figure as Figure_YYYYMMDD_foo.rfig3
     - `Ctrl+Shift+D` will duplicate the line(s)
     - `Ctrl+Shift+K` will delete the line(s)
     - `Ctrl+J` reshape the selected line(s) in one single line
+    - `Ctrl+F` find and replace
+    - `F3` find next
+    - `Shift+F3` find previous
 - `# RFIG_start_instructions` command: (deprecated, use the magic function `%%rfig_save` instead) when the instructions in input contained at some
 point the line
 > \# RFIG_start_instructions
