@@ -196,6 +196,7 @@ class RFigureMagics(Magics):
         if args.format_name:
             rf.formatName()
         rf.save(fig_type=args.fig_type)
+        self.shell.ex(cell)
 
 
     epilog_list_var = """
