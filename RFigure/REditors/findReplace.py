@@ -19,6 +19,7 @@ class FindReplaceDialog(QtWidgets.QDialog):
             the QTextEdit instance in which we have to find
         """
         QtWidgets.QDialog.__init__(self,parent=textedit,*args,**kargs)
+        self.setWindowTitle('Find and replace')
         self.textedit = textedit
 
         self.find_line        = QtWidgets.QLineEdit ()
@@ -46,7 +47,7 @@ class FindReplaceDialog(QtWidgets.QDialog):
 
         # Connections:
         find_button.clicked.connect( lambda :self.SLOT_find())
-        self.find_line.returnPressed  .connect( lambda :self.SLOT_find())
+        # self.find_line.returnPressed  .connect( lambda :self.SLOT_find())
         replace_button.clicked.connect( lambda :self.SLOT_replace())
         replaceall_button.clicked.connect( lambda :self.SLOT_replaceall())
 
@@ -62,7 +63,7 @@ class FindReplaceDialog(QtWidgets.QDialog):
         reverse : bool
             if True, the search goes backwards
         clearselection : bool
-            if True, clear the slection of teh cursor before beginging
+            if True, clear the selection of the cursor before beginging
             (it allows to stay in place if the cursor already selected the
             pattern)
         """
@@ -84,8 +85,12 @@ class FindReplaceDialog(QtWidgets.QDialog):
 
         if cursor is None:
             cursor = self.textedit.textCursor()
-        if clearselection:
+        if clearselection :
             cursor.setPosition(cursor.selectionEnd() if reverse else  cursor.selectionStart())
+        elif cursor.hasSelection():
+            # this is necessary if we search `'aba'` in the string `'abababababa'`
+            cursor.setPosition(cursor.selectionStart() if reverse else  cursor.selectionStart()+1)
+
             # if (regexp and pattern.exactMatch(cursor.selectedText())) or (cursor.selectedText()==pattern):
             #     cur.movePosition(QtGui.QTextCursor.Right if reverse else QtGui.QTextCursor.Left,QtGui.QTextCursor.MoveAnchor)
 
@@ -97,7 +102,8 @@ class FindReplaceDialog(QtWidgets.QDialog):
             cursor = QtGui.QTextCursor(self.textedit.document())
             if reverse:
                 cursor.movePosition(QtGui.QTextCursor.End)
-            return self.SLOT_find(cursor=cursor,loop=False,reverse=reverse,clearselection=clearselection)
+            return self.SLOT_find(cursor=cursor,loop=False,reverse=reverse,
+                                                clearselection=clearselection)
         return False
 
 
