@@ -4,7 +4,7 @@ import os
 from pytest import mark
 
 dir,_ = os.path.split(__file__)
-filepath_testfile=os.path.join(dir,'./Test.rfig3')
+filepath_testfile=os.path.join(dir,'./Test4.rfig3')
 
 
 """
@@ -63,7 +63,7 @@ def test3():
     res = set(find_list_variables(instructions,locals_))
     assert len(res)==0
 
-    
+
 
 def test4():
     """
@@ -76,3 +76,15 @@ def test4():
     locals_ = dict(a=0)
     res = set(find_list_variables(instructions,locals_))
     assert len(res)==0
+
+def test5():
+    """
+    We can save array with dtype is bool
+    """
+    import numpy as np
+    import RFigure
+    # d = dict() # the data to display
+    # c = "This is a test with pandas" # the commentaries associate with the figures
+    rf = RFigure.RFigureCore(d={'a':np.zeros(10,dtype=bool)},i='',c='')
+    rf.save(filepath=filepath_testfile)
+    os.remove(filepath_testfile)

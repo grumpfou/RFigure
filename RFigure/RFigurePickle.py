@@ -44,6 +44,7 @@ if has_numpy:
     authorized_types += [numpy.float16,numpy.float32,numpy.float64]
     authorized_types += [numpy.complex,numpy.complex64,numpy.complex128]
     authorized_types += [numpy.datetime64,numpy.timedelta64]
+    authorized_types += [numpy.bool_]
 
 if has_pandas:
     authorized_types.append(pandas.core.frame.DataFrame)
