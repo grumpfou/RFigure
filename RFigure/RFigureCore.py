@@ -8,9 +8,9 @@ import warnings
 import inspect
 import textwrap
 
-with warnings.catch_warnings():
-    warnings.simplefilter("ignore")
-    matplotlib.use('Qt5Agg')
+# with warnings.catch_warnings():
+#     warnings.simplefilter("ignore")
+#     matplotlib.use('Qt5Agg')
 
 import matplotlib.pyplot
 # matplotlib.pyplot.ion()
