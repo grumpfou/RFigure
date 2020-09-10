@@ -114,12 +114,14 @@ instructions
 - RFigureConfig: contains the header that will be execute before any
 instructions. It typically import numpy and matplotlib as the magic function
 %pyplot does in Jupyter/IPython
-- RFigurePickle: handles the coding and decoding of information contained in rfig3
-files. Works in the same way as the regular pickle library of python
+- RFigurePickle: handles the coding and decoding of information contained in
+rfig3 files. Works in the same way as the regular pickle library of python
 - REditors: contains the Syntax Highlighters used to display the python code
 (for the instructions) and the markdown code (for the commentaries).
 - RFigureMagics: contains the magic functions that can be used in
 Jupyter/QtConsole.
+- RFigureSearchvar : contains function that analyse the code in order to
+determine the pertinent variable to save in the rfig file
 - RFigureMisc: various functions
 
 

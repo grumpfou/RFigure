@@ -31,6 +31,7 @@ path_to_header = os.path.join(file_dir,path_to_header)
 ########################################################################
 
 class RFigureGui(RFigureCore,QtWidgets.QWidget):
+    frame_number = 2
     def __init__(self,parent=None,*args,**kargs):
         """
         A class that inherit from RFigureCore for the core aspects and QWidget

@@ -1,88 +1,11 @@
 from . import RFigureCore
 from . import RFigurePickle
 from . import RFigureMisc
-import os,re,sys,argparse,shlex,textwrap
+from . import RFigureSearchvar
+import re,sys,argparse,shlex,textwrap
 import numpy as np
 from IPython.core.magic import  (Magics, magics_class, line_magic,
                                 cell_magic, line_cell_magic)
-def find_list_variables(instructions,locals_):
-    """Try ot find the names of  variables that are used in the instructions.
-
-    Parameters
-    ----------
-    instructions : str
-        the instructions in which we find the variables
-    locals_ : dict
-        the dict in whhich should be the variables
-
-
-    Returns
-    -------
-    vars_ : list of str
-        list of all the name of the variables used in the instructions
-    """
-    # Remove commentaries
-    # NOTE: will also remove something like a="# this is not a comment" # this is a comment
-    lines = [line.split('#')[0] for line in instructions.split("\n")]
-    instructions = '\n'.join(lines)
-    # remove assignments
-    instructions = re.sub(r'\b\w+\b *=',"",instructions)
-
-    # we search the all the words
-    vars_ = re.findall(r'\b\w+\b',instructions)
-    vars_ = list(set(vars_))
-
-    # we remove the varibales of the for loops if they are not used before in the instructions
-    # for res in re.finditer(r'\s*for +\b([\w ,]+)\b +\bin\b',instructions):
-    for res in re.finditer(r'\s*for (.*)\bin\b',instructions):
-        pos = res.start()
-        vars_string = res.groups()[0].strip()
-
-        # to deal with example lifke "for i,(x,y) in enumerate(.....)"
-        vars_string = vars_string.replace('(','')
-        vars_string = vars_string.replace(')','')
-
-        # example: "for x, y in range(10)" → var_list=['x','y']
-        var_list = [r.strip() for r in vars_string.split(',')]
-        l_filter = lambda r: (not (re.match('(\w)+',r)  is None)) and (re.match('(\w)+',r).group()==r)
-        var_list = list(filter(l_filter,var_list))
-
-        for v in var_list:
-            try:
-                pos1 = re.search(r'\b%s\b'%v,instructions).start()
-
-                # if the first occurence of `v` is at a for loop,
-                if pos1>=pos and v in vars_:
-                    # we remove `v` from `vars_`
-                    vars_.remove(v)
-            except:
-                print('Problem with the regular expression: \'%s\''%v)
-
-    # we filter all the variables that are in locals_
-    vars_ = [a for a in vars_ if a in locals_]
-    # we filter all the variables that can be saved in RFigurePickle
-    vars_ = filter(lambda x : RFigurePickle.isAuthorized(locals_[x]),vars_)
-    return vars_
-
-def find_ipython_locals():
-    i=0
-    while True:
-        try:
-            f = sys._getframe(i)
-        except ValueError:
-            raise StopIteration('Could not find the ipython instance in all the frames')
-        if f.f_code.co_filename.startswith("<ipython"):
-            ipy_locals = f.f_locals
-            break
-        i+= 1
-    return ipy_locals
-
-def find_vars_dict(cell):
-    ipy_locals = find_ipython_locals()
-    vars_ = find_list_variables(instructions=cell,locals_=ipy_locals)
-    d = {k:ipy_locals[k] for k in vars_}
-    return d
-
 
 
 class MyArgumentParser(argparse.ArgumentParser):
@@ -172,14 +95,14 @@ class RFigureMagics(Magics):
         if args.filepath is None:
             self.parser_save.error("the following arguments are required: filepath")
         if args.d is None:
-            args.d = find_vars_dict(cell)
+            args.d = RFigureSearchvar.find_varsdict_from_cell(cell)
             print("We determined the RFigure variables to be: `"+"`, `".join(args.d.keys())+"`")
         else:
-            args.d = eval(args.d[0],find_ipython_locals())
+            args.d = eval(args.d[0],RFigureSearchvar.find_ipython_locals())
         if args.c is None:
             args.c = ""
         else:
-            args.c = eval(args.c[0],find_ipython_locals())
+            args.c = eval(args.c[0],RFigureSearchvar.find_ipython_locals())
         if args.fig_type is None:
             args.fig_type = 'pdf'
         elif args.fig_type=='None':
@@ -238,7 +161,7 @@ class RFigureMagics(Magics):
         if args.help is True:
             self.parser_list_var.print_help()
             return True
-        d = find_vars_dict(cell)
+        d = RFigureSearchvar.find_varsdict_from_cell(cell)
         print("We determined the RFigure variables to be: `"+"`, `".join(d.keys())+"`")
         if not args.dict_variable is None:
             print("args.dict_variable[0]",args.dict_variable)

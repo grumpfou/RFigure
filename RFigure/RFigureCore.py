@@ -23,9 +23,10 @@ import traceback
 import sys
 from . import RFigurePickle
 from .RFigureMisc import RDateDisplay, RTextWrap,decoDocFormating
+from .RFigureSearchvar import find_varsdict_from_list
 from matplotlib.backends.backend_pdf import PdfPages
 
-__version__ = '3'
+__version__ = '3.1'
 
 ###################### CONFIG IMPORTATION ##############################
 path_to_header = './RFigureConfig/RFigureHeader.py'
@@ -43,6 +44,8 @@ class RFigureCore:
     CURDATE = None # you can reassign CURDATE to the date by default (something like `'20191031'` )
     ext = '.rfig3'
     fig_type_list=['pdf','eps','png','svg']
+    frame_number = 1 # Usefull in the case where d is a list. tell how many frame we need to take to have the function call
+
     def __init__(self,
             d=None,i=None,c=None,
             file_split="# RFIG_start_instructions",
@@ -68,6 +71,8 @@ class RFigureCore:
         filepath : str
             the path to the file (useful for the local header and to directly
             save the file)
+        frame : int
+
 
         Example
         -------
@@ -90,6 +95,8 @@ class RFigureCore:
         else:
             self.instructions = i
         self.commentaries = "" if c is None else c
+        if type(d)==list:
+            d = find_varsdict_from_list(d,frame_number)
         self.dict_variables = {} if d is None else d
         self.file_split = file_split
 
