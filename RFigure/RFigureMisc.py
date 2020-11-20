@@ -24,7 +24,7 @@ class RPathFormatting:
                     '%s':'(.*)',
                     }
     def __init__(self,format,date=None):
-        """ Class that will deal with formating the filepath with the correct
+        """ Class that will deal with formatting the filepath with the correct
         date.
 
         Parameters
@@ -43,15 +43,15 @@ class RPathFormatting:
 
     def interpretFormat(self):
         """ Methods that slits `self.format` in such a way it seperates the date
-        relative formating (%Y, %m, %d, etc.) from the descrition formating
+        relative formatting (%Y, %m, %d, etc.) from the descrition formatting
         (%s). For instance, if the format is `"Figure_%Y%m%d_%s"`; then it will
         return the list `["Figure_%Y%m%d_","%s"]`.
 
         Returns:
         --------
         formatting : list of str
-            the spliting of `self.format` that seperate date formating from
-            decription formating.
+            the spliting of `self.format` that seperate date formatting from
+            decription formatting.
         """
         s = self.format
         formatting = s.split('%s')
@@ -63,7 +63,7 @@ class RPathFormatting:
         return  formatting
 
     def checkFormatting(self,filepath):
-        """ Checks if the filepath is compatible with the current formating.
+        """ Checks if the filepath is compatible with the current formatting.
 
         Parameters
         ----------
@@ -86,7 +86,7 @@ class RPathFormatting:
         return re.match(format_re,filename)
 
     def formatDate(self,date=None):
-        """ Return the filename with only the description formating remain to be
+        """ Return the filename with only the description formatting remain to be
         done.
 
         Parameters
@@ -98,7 +98,7 @@ class RPathFormatting:
         Returns
         -------
         result : str
-            the resulting filename with the depent description formating readu
+            the resulting filename with the depent description formatting ready
             to be applyied.
 
         Example
@@ -121,12 +121,12 @@ class RPathFormatting:
 
     def getPercentValues(self):
         """ Analyse the format and returns the list of the different percent
-        formating (%Y, %d, %s etc.) in the right order.
+        formatting (%Y, %d, %s etc.) in the right order.
 
         Return
         -------
         res : list of str
-            the lisr of the different percent formating
+            the lisr of the different percent formatting
 
         Example
         -------
@@ -144,12 +144,12 @@ class RPathFormatting:
 
     def formatFilepath(self,filepath,date=None,replace_existing_date=False):
         """ Analyse the format and returns the list of the different percent
-        formating (%Y, %d, %s etc.) in the right order.
+        formatting (%Y, %d, %s etc.) in the right order.
 
         Return
         -------
         res : list of str
-            the lisr of the different percent formating
+            the lisr of the different percent formatting
         replace_existing_date : bool
             if True and `filepath` alreading in a corresponding format
             then, it replaces the date in the failepath
@@ -175,7 +175,7 @@ class RPathFormatting:
 
     def getDate(self,filepath):
         """ Recover the date of the current filepath if it is as the good
-        formating.
+        formatting.
 
         Parameters
         ----------
@@ -199,7 +199,7 @@ class RPathFormatting:
 
         a = self.checkFormatting(filename)
         if not a:
-            raise ValueError('The variable `to_get` is not at the correct formating.')
+            raise ValueError('The variable `to_get` is not at the correct formatting.')
         values = self.getPercentValues()
         groups = [g for g,v in zip(a.groups(),values) if v!='%s']
         values = [v for v in values if v!='%s']
@@ -255,14 +255,14 @@ def decoSetDoc(doc):
         return func
     return function_deco
 
-def decoDocFormating(*args):
+def decoDocFormatting(*args):
     """ Decorator that will format the documentation of the function by using
-    the formating like `doc%args`
+    the formatting like `doc%args`
 
     Parameters
     ----------
     args : objects
-        the argument to put in the formating
+        the argument to put in the formatting
 
     Returns
     -------

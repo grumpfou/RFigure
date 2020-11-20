@@ -19,7 +19,7 @@ import tempfile
 import re
 import traceback
 import sys
-from .RFigureMisc import  RTextWrap,decoDocFormating
+from .RFigureMisc import  RTextWrap,decoDocFormatting
 from PyQt5 import QtGui, QtCore,QtWidgets
 from .REditors import RPythonEditor,RMarkdownEditor
 from .RFigureCore import RFigureCore,__version__
@@ -123,7 +123,7 @@ class RFigureGui(RFigureCore,QtWidgets.QWidget):
         # Restore sys.stdout
         sys.stdout = sys.__stdout__
 
-    @decoDocFormating(RFigureCore.fig_type_list)
+    @decoDocFormatting(RFigureCore.fig_type_list)
     def save(self,filepath=None):
         """
         The saving function called by the `Save` button.

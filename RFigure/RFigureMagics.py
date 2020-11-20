@@ -251,7 +251,7 @@ class RFigureMagics(Magics):
     @line_magic
     def rfig_curdate(self,line):
         """ Magic function that assign a different current date that will be
-        used when formating the names. Equivalent to change the value of
+        used when formatting the names. Equivalent to change the value of
         `RFigureCore.CURDATE`.
 
         Examples
