@@ -1,48 +1,211 @@
 # PYTHON 3
-import datetime,re
+import datetime,re,os
 import textwrap
 import numpy as np
 import subprocess
 
-class RDateDisplay:
-    """Methods to display the string that represent the date.
-    """
-    @staticmethod
-    def cur_date(date="Today",with_hour=False):
-        """ Will return a string containing the date under the format YYYYMMDD.
+
+###################### CONFIG IMPORTATION ##############################
+path_to_config = './RFigureConfig/RFigureConfig.py'
+file_dir = os.path.realpath(os.path.dirname(__file__))
+path_to_config = os.path.join(file_dir,path_to_config)
+########################################################################
+
+class RPathFormatting:
+    date_replace_dict= { '%Y':'([0-9][0-9][0-9][0-9])',
+                    '%y':'([0-9][0-9])',
+                    '%m':'([0-9][0-9])',
+                    '%d':'([0-9][0-9])',
+                    '%H':'([0-2][0-9])',
+                    '%I':'([0-1][0-9])',
+                    '%p':'({AM,am,Pm,pm})',
+                    '%M':'({[0-5][0-9]})',
+                    '%S':'({[0-5][0-9]})',
+                    '%s':'(.*)',
+                    }
+    def __init__(self,format,date=None):
+        """ Class that will deal with formating the filepath with the correct
+        date.
 
         Parameters
         ----------
-        date : int or str
-            Which day should be refered. If int, refers to the number of day
-            compared to today (negative for the past, positive for the future).
-            If str, should be in [""Today", "Yesterday, "Tomorrow"] (by default
-            "Today").
-        with_hour : bool
-            If True return add the hours to the string. The format
-            will then be YYYYMMDDHHMMSS.
+        format : str
+            the format to which format the filename. For instance
+            "Figure_%Y%m%d_%s" will format the file as `Figure_YYYYMMDD_foo`
+            where YYYYMMDD stands for the current date and foo stands for the
+            file description.
+        date : datetime.datetime instance
+            the date at which we have to display the file.
+            if None, takes the current date
         """
-        dico={
-                "Today"     : 0  ,
-                "Yesterday" : -1 ,
-                "Tomorrow"     : 1  ,
-            }
-        now=datetime.datetime.now()
-        if date in dico.keys():
-            date=now+datetime.timedelta(dico[date])
-        if type(date)==int:
-            date=now+datetime.timedelta(date)
-        if with_hour:
-            return date.strftime("%Y%m%d%H%M%S")
+        self.format = format
+        self.date = date
+
+    def interpretFormat(self):
+        """ Methods that slits `self.format` in such a way it seperates the date
+        relative formating (%Y, %m, %d, etc.) from the descrition formating
+        (%s). For instance, if the format is `"Figure_%Y%m%d_%s"`; then it will
+        return the list `["Figure_%Y%m%d_","%s"]`.
+
+        Returns:
+        --------
+        formatting : list of str
+            the spliting of `self.format` that seperate date formating from
+            decription formating.
+        """
+        s = self.format
+        formatting = s.split('%s')
+        if len(formatting)==1:
+            formatting = formatting+['%s']
         else:
-            return date.strftime("%Y%m%d")
-    @staticmethod
-    def date_from_str(s):
-        """Will return the datetime corresponding to the s whise format is
-        YYYYMMDD"""
-        assert re.match('[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]',s)
-        d = datetime.date(int(s[0:4]), int(s[4:6]), int(s[6:8]))
-        return d
+            formatting = [x  for y in formatting[:-1] for x in [y,'%s']]+[formatting[-1]]
+            formatting = [x for x in formatting if len(x)>0]
+        return  formatting
+
+    def checkFormatting(self,filepath):
+        """ Checks if the filepath is compatible with the current formating.
+
+        Parameters
+        ----------
+        filepath : str
+            the filepath to compare with.
+
+        Returns
+        -------
+        search_result : re.Match or None
+            if None, the filpath do not math; otherwise the re.Match instance
+            corresponding
+        """
+        _,filename = os.path.split(filepath)
+        filename,_ = os.path.splitext(filename)
+
+        format_re = re.escape(self.format)
+        for k,v in self.date_replace_dict.items():
+            format_re = format_re.replace(k,v)
+        format_re = '^'+format_re
+        return re.match(format_re,filename)
+
+    def formatDate(self,date=None):
+        """ Return the filename with only the description formating remain to be
+        done.
+
+        Parameters
+        ----------
+        date : datetime.datetime instance
+            the date to consider in the formatting; if none, takes `self.date`;
+            (and if `self.date is None`; considers the current day).
+
+        Returns
+        -------
+        result : str
+            the resulting filename with the depent description formating readu
+            to be applyied.
+
+        Example
+        -------
+        >>> a = RPathFormatting(format="Figure_%Y%m%d_%s")
+        >>> a.formatDate(date=datetime.datetime(2020,11,17))
+        "Figure_20201117_%s"
+        """
+        if date is None:
+            date=self.date
+        if date is None:
+            date = datetime.datetime.now()
+
+        res = ''
+        for f in self.interpretFormat():
+            if  '%s' not in f:
+                f = date.strftime(f)
+            res += f
+        return res
+
+    def getPercentValues(self):
+        """ Analyse the format and returns the list of the different percent
+        formating (%Y, %d, %s etc.) in the right order.
+
+        Return
+        -------
+        res : list of str
+            the lisr of the different percent formating
+
+        Example
+        -------
+        >>> a = RPathFormatting(format="Figure_%Y%m%d_%s")
+        >>> a.getPercentValues()
+        ["%Y","%m","%d","%s"]
+        """
+        positions = {}
+        for k in self.date_replace_dict:
+            for pos in  [m.start() for m in re.finditer(k,self.format)]:
+                positions[pos] = k
+        kv = list(positions.items())
+        values = [v for _,v in sorted(list(positions.items()))]
+        return values
+
+    def formatFilepath(self,filepath,date=None,replace_existing_date=False):
+        """ Analyse the format and returns the list of the different percent
+        formating (%Y, %d, %s etc.) in the right order.
+
+        Return
+        -------
+        res : list of str
+            the lisr of the different percent formating
+        replace_existing_date : bool
+            if True and `filepath` alreading in a corresponding format
+            then, it replaces the date in the failepath
+
+        Example
+        -------
+        >>> a = RPathFormatting(format="Figure_%Y%m%d_%s")
+        >>> a.getPercentValues()
+        ["%Y","%m","%d","%s"]
+        """
+        dirpath,filename = os.path.split(filepath)
+        filename,ext = os.path.splitext(filename)
+        formatting = self.checkFormatting(filename)
+        if formatting:
+            values = self.getPercentValues()
+            filename = formatting.groups()[values.index('%s')]
+            if not replace_existing_date:
+                date = self.getDate(filepath)
+        filename = self.formatDate(date=date)%filename
+
+        filepath = os.path.join(dirpath,filename+ext)
+        return filepath
+
+    def getDate(self,filepath):
+        """ Recover the date of the current filepath if it is as the good
+        formating.
+
+        Parameters
+        ----------
+        filepath : str
+            the filepath from which the date has to be retrieved
+
+        Returns
+        -------
+        date : datetime.datetime instance
+            the corresponding datetime
+
+        Example
+        -------
+        >>> a = RPathFormatting(format="Figure_%Y%m%d_%s")
+        >>> a.getDate('foo/Figure_20201117_fii.rfig3')
+        datetime.datetime(2020, 11, 17, 0, 0)
+
+        """
+        _,filename = os.path.split(filepath)
+        filename,_ = os.path.splitext(filename)
+
+        a = self.checkFormatting(filename)
+        if not a:
+            raise ValueError('The variable `to_get` is not at the correct formating.')
+        values = self.getPercentValues()
+        groups = [g for g,v in zip(a.groups(),values) if v!='%s']
+        values = [v for v in values if v!='%s']
+        date = datetime.datetime.strptime(''.join(groups),''.join(values))
+        return date
+
 
 
 def RTextWrap(text,nb=79,sep='\n',begin="") :

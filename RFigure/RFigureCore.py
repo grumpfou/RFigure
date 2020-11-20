@@ -22,7 +22,7 @@ import re
 import traceback
 import sys
 from . import RFigurePickle
-from .RFigureMisc import RDateDisplay, RTextWrap,decoDocFormating
+from .RFigureMisc import RPathFormatting, RTextWrap,decoDocFormating
 from .RFigureSearchvar import find_varsdict_from_list
 from matplotlib.backends.backend_pdf import PdfPages
 
@@ -32,7 +32,15 @@ __version__ = '3.1'
 path_to_header = './RFigureConfig/RFigureHeader.py'
 file_dir = os.path.realpath(os.path.dirname(__file__))
 path_to_header = os.path.join(file_dir,path_to_header)
+
+# For fuiture config
+# path_to_config = './RFigureConfig/RFigureConfig.py'
+# path_to_config = os.path.join(file_dir,path_to_config)
+# config = {}
+# if os.path.exists(path_to_config):
+#     exec(open(path_to_config).read(),{},config)
 ########################################################################
+
 
 # matplotlib.pyplot.ion()
 
@@ -42,6 +50,8 @@ class RFigureCore:
     This si the RFigureCore core class.
     """
     CURDATE = None # you can reassign CURDATE to the date by default (something like `'20191031'` )
+    FORMAT = "Figure_%Y%m%d_%s"
+
     ext = '.rfig3'
     fig_type_list=['pdf','eps','png','svg']
     frame_number = 1 # Usefull in the case where d is a list. tell how many frame we need to take to have the function call
@@ -416,6 +426,8 @@ class RFigureCore:
         rfig.save(fig_type=fig_type)
         return rfig
 
+
+
     def formatName(self,filepath=None,replace_current=True):
         """
         Format the filename under the format: "path/Figure_YYYYMMDD_foo.rfig3"
@@ -449,14 +461,18 @@ class RFigureCore:
         """
         if filepath is None:
             filepath = self.filepath
-        dirpath,filename = os.path.split(filepath)
-        if not re.match('^Figure_[0-9]{8}_',filename):
-            if self.CURDATE is None:
-                filename = 'Figure_'+RDateDisplay.cur_date()+'_'+filename
-            else:
-                assert  re.match('^[0-9]{8}$',self.CURDATE)
-                filename = 'Figure_'+self.CURDATE+'_'+filename
-        filepath = os.path.join(dirpath,filename)
+        # format = config.get('formatName','Figure_%Y%m%d_%s')
+        # Furture config:
+        # path_to_config_local = os.path.join(dirpath,'./.RFigureConfigLocal.py')
+        # if os.path.exists(path_to_config_local):
+        #     con
+
+        if self.CURDATE is None:
+            date = None
+        else:
+            date = datetime.datetime.strptime(self.CURDATE,'%Y%m%d')
+
+        filepath = RPathFormatting(self.FORMAT,date=date).formatFilepath(filepath=filepath)
         if replace_current: self.filepath = filepath
         return filepath
 
