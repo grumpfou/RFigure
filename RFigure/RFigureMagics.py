@@ -274,6 +274,30 @@ class RFigureMagics(Magics):
         assert  re.match('^[0-9]{8}$',line),'Use a date under the format YYYYMMDD'
         RFigureCore.CURDATE = line
 
+    @line_magic
+    def rfig_format(self,line):
+        """ Magic function that assign a different format that will be
+        used when formatting the names. Equivalent to change the value of
+        `RFigureCore.FORMAT`.
+
+        Examples
+        --------
+        (in IPython/Jupyter)
+
+        >>> %rfig_save --format_name Test
+        ... # Will save in the file `Figure_YYYYMMDD_Test.rfig3` where YYYYMMDD
+        ... # stands for the current date.
+        ... plt.plot(np.arange(10),np.arange(10))
+
+        >>> %rfig_format Fig-%Y-%m-%d_%s
+        ... # set the curent date to `'Fig-%Y-%m-%d_%s'`
+
+        >>> %rfig_save --format_name Test
+        ... # Will save in the file `Fig_YYYY-MM-DD_Test.rfig3`
+        ... plt.plot(np.arange(10),np.arange(10))
+        """
+        line = line.strip()
+        RFigureCore.FORMAT = line
 
 def load_ipython_extension(ipython):
     ipython.register_magics(RFigureMagics)
